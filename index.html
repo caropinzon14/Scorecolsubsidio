@@ -221,7 +221,26 @@
   .ficha-actions{display:flex; gap:10px; margin-top:10px; flex-wrap:wrap;}
   .copy-ok{color:var(--teal); font-size:12px; font-weight:600; margin-left:4px;}
 
-  /* ---------- Tab 3: recorrido de compra ---------- */
+  /* ---------- Tab 3: recorrido de compra (customer journey map) ---------- */
+  .journey-eyebrow{font-family:'IBM Plex Mono',monospace; text-transform:uppercase; letter-spacing:.08em; font-size:11px; color:var(--accent-ink); margin:0 0 6px;}
+  .phase-map{display:grid; grid-template-columns:repeat(5,1fr); gap:10px; margin-bottom:20px;}
+  @media (max-width:1100px){ .phase-map{grid-template-columns:repeat(3,1fr);} }
+  @media (max-width:680px){ .phase-map{grid-template-columns:1fr 1fr;} }
+  @media (max-width:440px){ .phase-map{grid-template-columns:1fr;} }
+  .phase-card{border:1px solid var(--line); border-radius:var(--radius); background:#fff; padding:13px; display:flex; flex-direction:column; gap:8px;}
+  .phase-card-head{border-bottom:1px solid #EEEEE6; padding-bottom:8px; margin-bottom:2px;}
+  .phase-num{font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--ink-soft); text-transform:uppercase; letter-spacing:.05em;}
+  .phase-card h4{font-size:13.5px; margin:2px 0 0;}
+  .phase-en{font-size:10.5px; color:var(--ink-soft); font-style:italic;}
+  .phase-row b{display:block; font-size:9.5px; text-transform:uppercase; letter-spacing:.04em; color:var(--ink-soft); font-weight:600; font-family:'IBM Plex Mono',monospace; margin-bottom:3px;}
+  .phase-row{font-size:11.5px; line-height:1.4;}
+  .phase-touchpoints{display:flex; flex-wrap:wrap; gap:4px;}
+  .phase-chip{font-size:9.5px; background:#F1F2EC; color:var(--ink-soft); padding:2px 7px; border-radius:999px; white-space:nowrap;}
+
+  .phase-divider{margin:4px 0 20px -54px; padding:9px 14px 9px 54px; background:var(--surface); border-top:1px solid var(--line); border-bottom:1px solid var(--line); position:relative; z-index:1;}
+  .phase-divider .pd-label{font-family:'IBM Plex Mono',monospace; font-size:11px; font-weight:600; letter-spacing:.06em; text-transform:uppercase; color:var(--accent-ink);}
+  .phase-divider .pd-sub{font-size:11.5px; color:var(--ink-soft); margin-top:2px;}
+
   .journey-wrap{position:relative; padding-left:54px;}
   .journey-line{position:absolute; left:21px; top:6px; bottom:6px; width:2px; background:var(--line);}
   .journey-stage{position:relative; margin-bottom:30px;}
@@ -396,8 +415,47 @@
   <!-- ============ TAB 3: RECORRIDO DE COMPRA ============ -->
   <section class="tabpanel" id="tab-journey">
     <div class="card card-pad" style="margin-bottom:20px;">
-      <h3>Del "no sé qué seguro necesito" a la póliza comprada</h3>
-      <p class="muted" style="margin-top:6px;">Las mismas 12 pólizas y el mismo motor de reglas — pero el camino cambia según si el cliente es afiliado o no afiliado a Colsubsidio, y termina en cierre automatizado o en asesoría personalizada según la categoría del producto recomendado.</p>
+      <p class="journey-eyebrow">Customer journey map</p>
+      <h3>Del "no sé qué seguro necesito" a cliente fiel</h3>
+      <p class="muted" style="margin-top:6px;">Las mismas 12 pólizas y el mismo motor de reglas — pero el camino cambia según si el cliente es afiliado o no afiliado a Colsubsidio, y termina en cierre automatizado o en asesoría personalizada según la categoría del producto recomendado. Cinco fases, cada una con sus touchpoints, la fricción típica del cliente y la oportunidad para Seggu/Colsubsidio.</p>
+
+      <div class="phase-map">
+        <div class="phase-card">
+          <div class="phase-card-head"><span class="phase-num">Fase 1</span><h4>Conciencia</h4><span class="phase-en">Awareness</span></div>
+          <div class="phase-row"><b>Qué hace</b>No sabe qué seguro necesita; busca orientación.</div>
+          <div class="phase-row"><b>Touchpoints</b><div class="phase-touchpoints"><span class="phase-chip">WhatsApp Hola Seggu</span><span class="phase-chip">Redes</span><span class="phase-chip">App/oficina Colsubsidio</span></div></div>
+          <div class="phase-row"><b>Fricción</b>Incertidumbre — no sabe por dónde empezar.</div>
+          <div class="phase-row"><b>Oportunidad</b>Contenido educativo de Seggu que baja la fricción del primer contacto.</div>
+        </div>
+        <div class="phase-card">
+          <div class="phase-card-head"><span class="phase-num">Fase 2</span><h4>Consideración</h4><span class="phase-en">Consideration</span></div>
+          <div class="phase-row"><b>Qué hace</b>Se identifica como afiliado o no, y responde el perfilamiento.</div>
+          <div class="phase-row"><b>Touchpoints</b><div class="phase-touchpoints"><span class="phase-chip">Formulario/chat</span><span class="phase-chip">Cédula</span></div></div>
+          <div class="phase-row"><b>Fricción</b>Cautela al dar datos; cansancio si el formulario es largo.</div>
+          <div class="phase-row"><b>Oportunidad</b>Autocompletar para afiliados, formulario corto de 5-6 preguntas para no afiliados.</div>
+        </div>
+        <div class="phase-card">
+          <div class="phase-card-head"><span class="phase-num">Fase 3</span><h4>Decisión</h4><span class="phase-en">Decision</span></div>
+          <div class="phase-row"><b>Qué hace</b>Ve el producto recomendado y por qué.</div>
+          <div class="phase-row"><b>Touchpoints</b><div class="phase-touchpoints"><span class="phase-chip">Pantalla de ranking</span></div></div>
+          <div class="phase-row"><b>Fricción</b>Desconfianza si la recomendación se siente genérica.</div>
+          <div class="phase-row"><b>Oportunidad</b>Mostrar el racional (por qué) construye confianza.</div>
+        </div>
+        <div class="phase-card">
+          <div class="phase-card-head"><span class="phase-num">Fase 4</span><h4>Compra</h4><span class="phase-en">Purchase</span></div>
+          <div class="phase-row"><b>Qué hace</b>Cierra la compra — solo o con un asesor.</div>
+          <div class="phase-row"><b>Touchpoints</b><div class="phase-touchpoints"><span class="phase-chip">Checkout en línea</span><span class="phase-chip">Llamada agendada</span></div></div>
+          <div class="phase-row"><b>Fricción</b>Ansiedad si el producto es complejo y no hay acompañamiento.</div>
+          <div class="phase-row"><b>Oportunidad</b>Checkout de un clic sin intermediario; agenda fácil con intermediario.</div>
+        </div>
+        <div class="phase-card">
+          <div class="phase-card-head"><span class="phase-num">Fase 5</span><h4>Postventa</h4><span class="phase-en">Post-purchase</span></div>
+          <div class="phase-row"><b>Qué hace</b>Usa la póliza, la renueva y puede necesitar otro seguro.</div>
+          <div class="phase-row"><b>Touchpoints</b><div class="phase-touchpoints"><span class="phase-chip">Recordatorio renovación</span><span class="phase-chip">Portal siniestros</span></div></div>
+          <div class="phase-row"><b>Fricción</b>Frustración si reclamar un siniestro es difícil.</div>
+          <div class="phase-row"><b>Oportunidad</b>El motor reevalúa el perfil y sugiere el siguiente producto — venta cruzada.</div>
+        </div>
+      </div>
     </div>
 
     <div class="card card-pad" style="margin-bottom:20px;">
@@ -431,6 +489,8 @@
       <div class="journey-wrap">
         <div class="journey-line"></div>
 
+        <div class="phase-divider"><div class="pd-label">Fase 1 · Conciencia (Awareness)</div><div class="pd-sub">El cliente todavía no sabe qué necesita.</div></div>
+
         <div class="journey-stage">
           <div class="journey-num">1</div>
           <h4>No sabe qué seguro necesita</h4>
@@ -441,6 +501,8 @@
           </div>
           <div class="case-overlay" id="case-stage-1"></div>
         </div>
+
+        <div class="phase-divider"><div class="pd-label">Fase 2 · Consideración (Consideration)</div><div class="pd-sub">Se identifica y responde el perfilamiento — el motor de reglas hace su trabajo.</div></div>
 
         <div class="journey-stage">
           <div class="journey-num">2</div>
@@ -466,12 +528,16 @@
           <div id="engine-panel"></div>
         </div>
 
+        <div class="phase-divider"><div class="pd-label">Fase 3 · Decisión (Decision)</div><div class="pd-sub">El motor ya calculó — ahora el cliente ve el resultado.</div></div>
+
         <div class="journey-stage">
           <div class="journey-num">4</div>
           <h4>Recomendación hiperpersonalizada</h4>
           <p class="muted" style="margin:0;">Se suman los pesos de las 11 variables por producto y se ordena por score — igual para afiliados y no afiliados. Si el cliente pidió un producto puntual, ese sube al puesto 1 y las otras dos sugerencias de mayor score quedan como complemento (ver pestaña Perfilar y vender).</p>
           <div class="case-overlay" id="case-stage-4"></div>
         </div>
+
+        <div class="phase-divider"><div class="pd-label">Fase 4 · Compra (Purchase)</div><div class="pd-sub">Se enruta y se cierra la venta.</div></div>
 
         <div class="journey-stage">
           <div class="journey-num">5</div>
@@ -503,6 +569,19 @@
               <p style="margin:4px 0 0; font-size:12px;">El asesor certificado cierra la venta en la llamada agendada; la póliza se emite tras la validación de underwriting.</p>
             </div>
           </div>
+        </div>
+
+        <div class="phase-divider"><div class="pd-label">Fase 5 · Postventa (Post-purchase)</div><div class="pd-sub">El recorrido no termina en la compra.</div></div>
+
+        <div class="journey-stage">
+          <div class="journey-num">7</div>
+          <h4>Después de comprar: renovación y venta cruzada</h4>
+          <p class="muted" style="margin:0;">El mismo perfil se reevalúa cuando cambian las variables del cliente (nuevo hijo, cambio de vivienda, compra de vehículo) y el motor puede sugerir el siguiente producto — sin volver a empezar de cero.</p>
+          <div class="journey-split">
+            <div class="journey-note afiliado"><span class="journey-note-label">Afiliado</span>Colsubsidio puede detectar cambios reales (nuevo hijo, cambio de EPS) y disparar el recálculo sin que el cliente tenga que pedirlo.</div>
+            <div class="journey-note no-afiliado"><span class="journey-note-label">No afiliado</span>El recálculo depende de que el cliente vuelva a contar su situación, por ejemplo en una siguiente conversación con Hola Seggu.</div>
+          </div>
+          <div class="case-overlay" id="case-stage-7"></div>
         </div>
 
       </div>
@@ -1287,11 +1366,14 @@ function simulateCase(){
 
   applyOutcomeState('s5', mode);
   applyOutcomeState('s6', mode);
+
+  const nextBest = results[1];
+  setCaseOverlay('case-stage-7', `Si nada cambia en el perfil, la siguiente oportunidad de venta cruzada para este caso es ${nextBest.nombre} (${pct(nextBest.pct)} de afinidad, ${modoCierre(nextBest.key)==='auto' ? 'sin intermediario' : 'con intermediario'}).`);
 }
 
 function resetCase(){
   CASE.active = false;
-  ['case-stage-1','case-stage-2','case-stage-3','case-stage-4'].forEach(clearCaseOverlay);
+  ['case-stage-1','case-stage-2','case-stage-3','case-stage-4','case-stage-7'].forEach(clearCaseOverlay);
   resetOutcomeState('s5');
   resetOutcomeState('s6');
   document.getElementById('case-summary').innerHTML = '';

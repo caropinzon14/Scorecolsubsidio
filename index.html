@@ -210,7 +210,8 @@
   .reco-secondary .top3-card{padding:14px;}
   .reco-secondary .top3-name{font-size:15px;}
 
-  .action-panel{border-radius:var(--radius); padding:20px; margin-top:4px;}
+  .action-panel{position:relative; border-radius:var(--radius); padding:20px; margin-top:4px;}
+  .action-panel.outcome-dim{opacity:.4; filter:grayscale(.5);}
   .action-panel.auto{background:var(--accent-tint); border:1px solid var(--accent);}
   .action-panel.asesoria{background:var(--teal-tint); border:1px solid var(--teal);}
   .action-panel h4{font-size:15px; margin-bottom:4px;}
@@ -246,6 +247,14 @@
   .engine-rule-body{flex:1; min-width:0;}
   .engine-rule-var{font-size:12.5px; font-weight:600;}
   .engine-rule-rat{font-size:11px; color:var(--ink-soft); margin-top:2px; line-height:1.4;}
+
+  .case-grid{display:grid; grid-template-columns:1fr 1fr; gap:12px 16px;}
+  @media (max-width:640px){ .case-grid{grid-template-columns:1fr;} }
+  .case-overlay{margin-top:12px; padding:10px 12px; border-radius:8px; background:var(--accent-tint); border:1px solid var(--accent); font-size:12.5px; color:var(--accent-ink); line-height:1.5; display:none;}
+  .case-overlay.show{display:block;}
+  .case-overlay-label{display:block; font-family:'IBM Plex Mono',monospace; font-size:10px; text-transform:uppercase; letter-spacing:.05em; margin-bottom:4px; opacity:.85;}
+  .case-summary{font-size:12.5px; color:var(--ink-soft);}
+  .case-summary b{color:var(--ink);}
 </style>
 </head>
 <body>
@@ -391,6 +400,33 @@
       <p class="muted" style="margin-top:6px;">Las mismas 12 pólizas y el mismo motor de reglas — pero el camino cambia según si el cliente es afiliado o no afiliado a Colsubsidio, y termina en cierre automatizado o en asesoría personalizada según la categoría del producto recomendado.</p>
     </div>
 
+    <div class="card card-pad" style="margin-bottom:20px;">
+      <div class="brand-row" style="align-items:flex-start;">
+        <div style="max-width:640px;">
+          <h3>Simulador de caso hipotético</h3>
+          <p class="muted" style="margin-top:6px;">Elige un caso (o ajusta las variables) y el recorrido de abajo se resuelve con el motor de reglas real: qué se pregunta, qué producto sale primero y si el cierre es automatizado o con asesoría — ya no una descripción genérica.</p>
+        </div>
+        <div class="radio-row" id="case-ctx-toggle" style="max-width:300px; min-width:260px;">
+          <label class="radio-pill checked-si" data-ctx="afiliado">Cliente afiliado</label>
+          <label class="radio-pill" data-ctx="no-afiliado">Cliente no afiliado</label>
+        </div>
+      </div>
+
+      <p class="hint" style="margin:14px 0 6px;">Casos de ejemplo:</p>
+      <div class="engine-picker" id="case-presets"></div>
+
+      <details class="sell-optional" style="margin-top:14px;">
+        <summary>Ajustar variables del caso</summary>
+        <div id="case-form" style="margin-top:10px;"></div>
+      </details>
+
+      <div style="display:flex; align-items:center; gap:12px; margin-top:14px; flex-wrap:wrap;">
+        <button class="btn btn-primary" id="btn-simular-caso" type="button">Simular este caso</button>
+        <button class="btn btn-ghost" id="btn-reset-caso" type="button">Ver flujo genérico</button>
+        <span class="case-summary" id="case-summary"></span>
+      </div>
+    </div>
+
     <div class="card card-pad">
       <div class="journey-wrap">
         <div class="journey-line"></div>
@@ -403,6 +439,7 @@
             <div class="journey-note afiliado"><span class="journey-note-label">Afiliado</span>Entra por un canal propio de Colsubsidio: app, oficina o campaña interna dirigida a la base de afiliados.</div>
             <div class="journey-note no-afiliado"><span class="journey-note-label">No afiliado</span>Llega por pauta, redes o WhatsApp de Hola Seggu — sin ninguna relación previa con Colsubsidio.</div>
           </div>
+          <div class="case-overlay" id="case-stage-1"></div>
         </div>
 
         <div class="journey-stage">
@@ -413,6 +450,7 @@
             <div class="journey-note afiliado"><span class="journey-note-label">Afiliado</span>Se identifica con su cédula. En producción, Colsubsidio ya tendría su relación laboral, EPS y subsidio familiar en sus bases (integración pendiente — ver pestaña Referencia).</div>
             <div class="journey-note no-afiliado"><span class="journey-note-label">No afiliado</span>Sin historial: no hay nada que autocompletar, todo el perfil se construye desde cero en la conversación.</div>
           </div>
+          <div class="case-overlay" id="case-stage-2"></div>
         </div>
 
         <div class="journey-stage">
@@ -423,6 +461,7 @@
             <div class="journey-note afiliado"><span class="journey-note-label">Afiliado</span>V1–V5 (edad, género, situación laboral, ingreso, composición familiar) vienen pre-cargados. Solo se pregunta lo de estilo de vida: V6–V11.</div>
             <div class="journey-note no-afiliado"><span class="journey-note-label">No afiliado</span>Formulario corto de autogestión: las 5–6 variables de mayor impacto primero, el resto queda opcional.</div>
           </div>
+          <div class="case-overlay" id="case-stage-3"></div>
           <div class="engine-picker" id="engine-picker"></div>
           <div id="engine-panel"></div>
         </div>
@@ -431,6 +470,7 @@
           <div class="journey-num">4</div>
           <h4>Recomendación hiperpersonalizada</h4>
           <p class="muted" style="margin:0;">Se suman los pesos de las 11 variables por producto y se ordena por score — igual para afiliados y no afiliados. Si el cliente pidió un producto puntual, ese sube al puesto 1 y las otras dos sugerencias de mayor score quedan como complemento (ver pestaña Perfilar y vender).</p>
+          <div class="case-overlay" id="case-stage-4"></div>
         </div>
 
         <div class="journey-stage">
@@ -438,11 +478,11 @@
           <h4>Enrutamiento: cierre automatizado o asesoría</h4>
           <p class="muted" style="margin:0 0 8px;">Depende del producto recomendado, no del tipo de cliente.</p>
           <div class="journey-split">
-            <div class="action-panel auto" style="margin-top:0;">
+            <div class="action-panel auto" style="margin-top:0;" id="s5-auto">
               <h4 style="font-size:13.5px;">Sin intermediario</h4>
               <p style="margin:4px 0 0; font-size:12px;">Autos, motos, bicicletas/patinetas, hogar, mascotas, exequial, accidentes y arrendamiento — se cotizan y cierran solos.</p>
             </div>
-            <div class="action-panel asesoria" style="margin-top:0;">
+            <div class="action-panel asesoria" style="margin-top:0;" id="s5-asesoria">
               <h4 style="font-size:13.5px;">Con intermediario</h4>
               <p style="margin:4px 0 0; font-size:12px;">Salud, vida, educación, renta por hospitalización y cáncer — pasan a un asesor certificado.</p>
             </div>
@@ -454,11 +494,11 @@
           <h4>Seguro comprado</h4>
           <p class="muted" style="margin:0 0 8px;">El punto de llegada del recorrido, distinto según cómo se cerró.</p>
           <div class="journey-split">
-            <div class="action-panel auto" style="margin-top:0;">
+            <div class="action-panel auto" style="margin-top:0;" id="s6-auto">
               <h4 style="font-size:13.5px;">Cierre automatizado</h4>
               <p style="margin:4px 0 0; font-size:12px;">Cotiza y paga en línea con los datos del checklist; la póliza queda emitida casi al instante (checkout real: integración pendiente con Hola Seggu / n8n).</p>
             </div>
-            <div class="action-panel asesoria" style="margin-top:0;">
+            <div class="action-panel asesoria" style="margin-top:0;" id="s6-asesoria">
               <h4 style="font-size:13.5px;">Con asesoría</h4>
               <p style="margin:4px 0 0; font-size:12px;">El asesor certificado cierra la venta en la llamada agendada; la póliza se emite tras la validación de underwriting.</p>
             </div>
@@ -1114,6 +1154,164 @@ function renderEnginePanel(){
 
 renderEnginePicker();
 renderEnginePanel();
+
+/* =========================================================================
+   Tab 3 — simulador de casos hipotéticos
+   ========================================================================= */
+// casos de ejemplo: perfiles completos (11 variables) para mostrar cómo el motor resuelve
+// el recorrido para un cliente concreto, no solo la explicación genérica.
+const CASE_PRESETS = [
+  {
+    label: 'Madre soltera, 2 hijos, banco, 1 SMMLV',
+    afiliado: true,
+    profile: {V1:'26-35 años', V2:'Femenino', V3:'Formal dependiente', V4:'Bajo (< $1.3M)', V5:'Monoparental con hijos', V6:'Arrendada', V7:'No', V8:'No tiene', V9:'No', V10:'No', V11:'Sí'}
+  },
+  {
+    label: 'Joven en moto, informal, arrienda solo',
+    afiliado: false,
+    profile: {V1:'18-25 años', V2:'Masculino', V3:'Informal / cuenta propia sin cotización', V4:'Bajo (< $1.3M)', V5:'Soltero(a) sin hijos', V6:'Arrendada', V7:'No', V8:'Moto', V9:'No', V10:'No', V11:'No'}
+  },
+  {
+    label: 'Pareja con casa propia, mascota, ingreso alto',
+    afiliado: true,
+    profile: {V1:'36-45 años', V2:'Femenino', V3:'Formal independiente / profesional', V4:'Alto (> $4.6M)', V5:'Pareja sin hijos', V6:'Propia financiada (hipoteca)', V7:'No', V8:'Carro', V9:'Sí', V10:'No', V11:'No'}
+  },
+  {
+    label: 'Adulto mayor a cargo de la familia',
+    afiliado: false,
+    profile: {V1:'66+ años', V2:'Masculino', V3:'Formal dependiente', V4:'Medio ($1.3M - $4.6M)', V5:'Multigeneracional / adulto mayor a cargo', V6:'Propia pagada', V7:'No', V8:'No tiene', V9:'No', V10:'No', V11:'No'}
+  },
+];
+
+const CASE = { afiliado: true, profile: null, active: false };
+
+function defaultCaseProfile(){
+  const p = {};
+  VARIABLES.forEach(v=> p[v.code] = v.categorias[0]);
+  return p;
+}
+
+function syncCaseToggle(){
+  document.querySelectorAll('#case-ctx-toggle .radio-pill').forEach(p=>{
+    p.classList.toggle('checked-si', (p.dataset.ctx==='afiliado')===CASE.afiliado);
+  });
+}
+
+function renderCasePresets(){
+  const wrap = document.getElementById('case-presets');
+  wrap.innerHTML = CASE_PRESETS.map((c,i)=>`<div class="chip" data-idx="${i}">${c.label}</div>`).join('');
+  wrap.querySelectorAll('.chip').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      const preset = CASE_PRESETS[el.dataset.idx];
+      CASE.profile = {...preset.profile};
+      CASE.afiliado = preset.afiliado;
+      syncCaseToggle();
+      renderCaseForm();
+      simulateCase();
+    });
+  });
+}
+
+function renderCaseForm(){
+  const wrap = document.getElementById('case-form');
+  if(!CASE.profile) CASE.profile = defaultCaseProfile();
+  wrap.innerHTML = `<div class="case-grid">` + VARIABLES.map(v=>{
+    const opts = v.categorias.map(c=>`<option value="${c}" ${CASE.profile[v.code]===c?'selected':''}>${c}</option>`).join('');
+    return `<div class="field" style="margin-bottom:0;">
+      <label><span class="code">${v.code}</span>${v.label}</label>
+      <select data-code="${v.code}">${opts}</select>
+    </div>`;
+  }).join('') + `</div>`;
+  wrap.querySelectorAll('select[data-code]').forEach(sel=>{
+    sel.addEventListener('change', ()=>{ CASE.profile[sel.dataset.code] = sel.value; });
+  });
+}
+
+function setCaseOverlay(id, html){
+  const el = document.getElementById(id);
+  el.innerHTML = `<span class="case-overlay-label">Para este caso</span>${html}`;
+  el.classList.add('show');
+}
+
+function clearCaseOverlay(id){
+  const el = document.getElementById(id);
+  el.classList.remove('show');
+  el.innerHTML = '';
+}
+
+function applyOutcomeState(prefix, mode){
+  const autoEl = document.getElementById(prefix+'-auto');
+  const asesoriaEl = document.getElementById(prefix+'-asesoria');
+  autoEl.classList.toggle('outcome-dim', mode!=='auto');
+  asesoriaEl.classList.toggle('outcome-dim', mode!=='asesoria');
+  const oldBadge1 = autoEl.querySelector('.outcome-check');
+  if(oldBadge1) oldBadge1.remove();
+  const oldBadge2 = asesoriaEl.querySelector('.outcome-check');
+  if(oldBadge2) oldBadge2.remove();
+  const active = mode==='auto' ? autoEl : asesoriaEl;
+  active.insertAdjacentHTML('afterbegin', '<span class="outcome-check explicit-badge">Este caso</span>');
+}
+
+function resetOutcomeState(prefix){
+  [prefix+'-auto', prefix+'-asesoria'].forEach(id=>{
+    const el = document.getElementById(id);
+    el.classList.remove('outcome-dim');
+    const badge = el.querySelector('.outcome-check');
+    if(badge) badge.remove();
+  });
+}
+
+function simulateCase(){
+  if(!CASE.profile) CASE.profile = defaultCaseProfile();
+  CASE.active = true;
+  const {results} = computeScores(CASE.profile);
+  const top = results[0];
+  const mode = modoCierre(top.key);
+  const afiliadoLabel = CASE.afiliado ? 'afiliado' : 'no afiliado';
+
+  document.getElementById('case-summary').innerHTML = `<b>Resultado:</b> ${top.nombre} (${pct(top.pct)} de afinidad) · ${mode==='auto' ? 'cierre automatizado' : 'con asesoría'} · cliente ${afiliadoLabel}`;
+
+  setCaseOverlay('case-stage-1', `Cliente ${afiliadoLabel}. El recorrido queda marcado en cada etapa de abajo.`);
+  setCaseOverlay('case-stage-2', CASE.afiliado
+    ? 'Es afiliado — en producción, Colsubsidio ya tendría edad, género, situación laboral, ingreso y composición familiar en sus bases; solo faltaría confirmar estilo de vida.'
+    : 'No es afiliado — las 11 variables se preguntan en la conversación, empezando por las de mayor impacto.');
+
+  const profileLines = VARIABLES.map(v=>`<b>${v.code}</b> ${CASE.profile[v.code]}`).join(' · ');
+  setCaseOverlay('case-stage-3', profileLines);
+  ENGINE.selected = top.key;
+  renderEnginePicker();
+  renderEnginePanel();
+
+  const top3 = results.slice(0,3).map(r=>`${r.nombre} (${pct(r.pct)})`).join(' · ');
+  setCaseOverlay('case-stage-4', `Ranking: ${top3}`);
+
+  applyOutcomeState('s5', mode);
+  applyOutcomeState('s6', mode);
+}
+
+function resetCase(){
+  CASE.active = false;
+  ['case-stage-1','case-stage-2','case-stage-3','case-stage-4'].forEach(clearCaseOverlay);
+  resetOutcomeState('s5');
+  resetOutcomeState('s6');
+  document.getElementById('case-summary').innerHTML = '';
+  ENGINE.selected = 'autos';
+  renderEnginePicker();
+  renderEnginePanel();
+}
+
+document.querySelectorAll('#case-ctx-toggle .radio-pill').forEach(pill=>{
+  pill.addEventListener('click', ()=>{
+    CASE.afiliado = pill.dataset.ctx === 'afiliado';
+    syncCaseToggle();
+    if(CASE.active) simulateCase();
+  });
+});
+document.getElementById('btn-simular-caso').addEventListener('click', simulateCase);
+document.getElementById('btn-reset-caso').addEventListener('click', resetCase);
+
+renderCasePresets();
+renderCaseForm();
 </script>
 </body>
 </html>

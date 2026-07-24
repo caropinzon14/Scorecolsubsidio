@@ -1,6 +1,6 @@
 # Perfilador de Clientes — Colsubsidio
 
-App de una sola página (`index.html`, vanilla JS, sin build ni dependencias más allá de una fuente de Google Fonts) que expone el motor de reglas de Seggu para segmentar clientes de seguros de Colsubsidio, perfilarlos como afiliados o no afiliados y enrutar la venta a cierre automatizado sin intermediario o a asesoría personalizada con intermediario, según la categoría de póliza recomendada.
+App de una sola página (`index.html`, vanilla JS, sin build ni dependencias más allá de una fuente de Google Fonts) que expone un motor de reglas para segmentar clientes de seguros de Colsubsidio, perfilarlos como afiliados o no afiliados y enrutar la venta a cierre automatizado sin intermediario o a asesoría personalizada con intermediario, según la categoría de póliza recomendada.
 
 Fuentes originales del modelo: `Motor_Scoring_Seguros_Colsubsidio.xlsx` (matriz de pesos) y `datos-cotizacion-colsubsidio_md.pdf` (checklist de datos por producto). No están incluidos en este paquete — si vas a recalibrar pesos o agregar productos, pide esos archivos de nuevo o mantén `index.html` como fuente de verdad mientras tanto.
 
@@ -55,5 +55,5 @@ python3 -m http.server 8000
 - Sumar el matiz "afiliado" como variable real de la matriz de pesos cuando haya datos de conversión histórica para calibrarlo.
 - Recalibrar los pesos de `educacion` con datos reales (el checklist ya está confirmado, faltan los pesos).
 - Decidir con el equipo si se agrega Viajes como producto 13, y con qué pesos de partida.
-- Integrar con Hola Seggu / n8n para automatizar el paso de la ficha de cierre (o el resumen para asesor) generada en la pestaña 1 a cotización/pago en línea o a agendamiento de la asesoría.
+- Integrar con n8n (u otro orquestador) para automatizar el paso de la ficha de cierre (o el resumen para asesor) generada en la pestaña 1 a cotización/pago en línea o a agendamiento de la asesoría.
 - Persistir el perfil y la ficha generada (hoy vive solo en memoria del navegador, se pierde al recargar).

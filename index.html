@@ -120,23 +120,7 @@
   .top3-why{font-size:12px; color:var(--ink-soft); line-height:1.45;}
   .explicit-badge{position:absolute; top:-9px; right:12px; background:var(--ink); color:#fff; font-size:9.5px; letter-spacing:.05em; text-transform:uppercase; padding:3px 8px; border-radius:999px; font-family:'IBM Plex Mono',monospace;}
 
-  table{width:100%; border-collapse:collapse; font-size:13px;}
-  th{text-align:left; font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:.05em; text-transform:uppercase; color:var(--ink-soft); font-weight:500; padding:9px 10px; border-bottom:1px solid var(--line);}
-  td{padding:9px 10px; border-bottom:1px solid #EEEEE6; vertical-align:middle;}
-  tr.rowclick{cursor:pointer;}
-  tr.rowclick:hover{background:#FAFAF4;}
-  .rank-badge{font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--ink-soft); width:18px; display:inline-block;}
-  .bar-track{position:relative; height:16px; background:#EFEFE7; border-radius:4px; width:120px; overflow:hidden;}
-  .bar-fill{position:absolute; left:0; top:0; height:100%; border-radius:4px;}
-  .bar-fill.familia{background:var(--accent);}
-  .bar-fill.patrimonio{background:var(--teal);}
   .score-txt{font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--ink-soft); margin-left:8px;}
-  .detail-row td{background:#FAFAF6; padding:0;}
-  .detail-inner{padding:16px 18px;}
-  .detail-inner table{background:#fff; border:1px solid var(--line); border-radius:8px; overflow:hidden;}
-  .weight-cell{text-align:center; font-family:'IBM Plex Mono',monospace;}
-  .w0{color:#C7C9BE;}
-  .w-hi{color:var(--accent-ink); font-weight:600;}
 
   /* cotizacion checklist */
   .checklist-box{margin-top:16px; padding:16px 18px; border:1px dashed var(--line); border-radius:8px; background:#FAFAF6;}
@@ -152,22 +136,6 @@
   .modo-badge .dot{width:6px; height:6px; border-radius:50%; display:inline-block;}
   .modo-auto .dot{background:var(--accent);}
   .modo-asesoria .dot{background:var(--teal);}
-
-  /* ---------- Batch tab ---------- */
-  .upload-zone{
-    border:2px dashed var(--line); border-radius:var(--radius); padding:34px 20px; text-align:center;
-    background:#fff; margin-bottom:18px;
-  }
-  .upload-zone.drag{border-color:var(--accent); background:var(--accent-tint);}
-  .filter-row{display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px; align-items:center;}
-  .filter-row select, .filter-row input{width:auto; min-width:150px;}
-  .filter-row input[type=text]{min-width:200px;}
-  .count-pill{font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--ink-soft); background:#F1F2EC; padding:6px 12px; border-radius:999px;}
-  .th-sort{cursor:pointer; user-select:none;}
-  .th-sort:hover{color:var(--ink);}
-  .badge-afiliado-si{color:var(--teal); font-weight:600; font-size:12px;}
-  .badge-afiliado-no{color:var(--ink-soft); font-size:12px;}
-  .flag-warn{color:var(--danger); font-size:11px; font-family:'IBM Plex Mono',monospace;}
 
   /* ---------- Reference tab ---------- */
   .ref-grid{display:grid; grid-template-columns:1fr 1fr; gap:16px;}
@@ -269,8 +237,7 @@
     <nav class="tabbar">
       <button class="tabbtn active" data-tab="sell"><span class="num">01</span>Perfilar y vender</button>
       <button class="tabbtn" data-tab="individual"><span class="num">02</span>Explorador de variables</button>
-      <button class="tabbtn" data-tab="batch"><span class="num">03</span>Carga masiva</button>
-      <button class="tabbtn" data-tab="ref"><span class="num">04</span>Referencia y fuentes</button>
+      <button class="tabbtn" data-tab="ref"><span class="num">03</span>Referencia y fuentes</button>
     </nav>
   </div>
 </div>
@@ -350,31 +317,7 @@
     </div>
   </section>
 
-  <!-- ============ TAB 2: BATCH ============ -->
-  <section class="tabpanel" id="tab-batch">
-    <div class="card card-pad" style="margin-bottom:20px;">
-      <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:16px; flex-wrap:wrap;">
-        <div>
-          <h3>Carga masiva de clientes</h3>
-          <p class="muted" style="margin-top:4px;">Sube un CSV con una fila por cliente. Descarga la plantilla para asegurar que las categorías coincidan exactamente con las 11 variables del motor.</p>
-        </div>
-        <button class="btn btn-ghost" id="btn-plantilla">↓ Descargar plantilla CSV</button>
-      </div>
-
-      <div class="upload-zone" id="upload-zone">
-        <p style="margin:0 0 8px; font-weight:600;">Arrastra tu archivo CSV aquí, o</p>
-        <label class="btn btn-primary" style="display:inline-flex;">
-          Seleccionar archivo
-          <input type="file" id="file-input" accept=".csv" style="display:none;">
-        </label>
-        <p class="hint" style="margin-top:10px;" id="upload-status">Ningún archivo cargado todavía.</p>
-      </div>
-    </div>
-
-    <div id="batch-results"></div>
-  </section>
-
-  <!-- ============ TAB 3: REFERENCE ============ -->
+  <!-- ============ TAB 2: REFERENCE ============ -->
   <section class="tabpanel" id="tab-ref">
     <div class="ref-grid">
       <div class="card card-pad">
@@ -585,7 +528,6 @@ function normalize(s){
     .replace(/\s+/g,' ');
 }
 function pct(n){ return Math.round(n*100)+'%'; }
-function lineaClass(l){ return l==='Familia' ? 'familia' : 'patrimonio'; }
 function lineaBadgeClass(l){ return l==='Familia' ? 'linea-familia' : 'linea-patrimonio'; }
 
 // modo de cierre comercial del producto, derivado de CHECKLIST.modo (única fuente de verdad):
@@ -970,11 +912,6 @@ document.getElementById('btn-generar-perfil').addEventListener('click', ()=>{
 
 renderSellForm();
 
-/* =========================================================================
-   Tab 2 — carga masiva
-   ========================================================================= */
-const CSV_HEADERS = ['nombre','cedula','afiliado','V1','V2','V3','V4','V5','V6','V7','V8','V9','V10','V11','producto_solicitado'];
-
 function downloadBlob(content, filename, type){
   const blob = new Blob([content], {type});
   const url = URL.createObjectURL(blob);
@@ -984,263 +921,8 @@ function downloadBlob(content, filename, type){
   URL.revokeObjectURL(url);
 }
 
-document.getElementById('btn-plantilla').addEventListener('click', ()=>{
-  const example = ['María Pérez','1010101010','Sí','36-45 años','Femenino','Formal independiente / profesional','Medio ($1.3M - $4.6M)','Con hijos menores de edad','Arrendada','No','Carro','Sí','No','No',''];
-  const csv = [CSV_HEADERS.join(','), example.map(v=>`"${v}"`).join(',')].join('\n');
-  downloadBlob(csv, 'plantilla_perfilador_colsubsidio.csv', 'text/csv;charset=utf-8;');
-});
-
-function parseCSV(text){
-  const rows = [];
-  let row = [], field = '', inQuotes = false;
-  for(let i=0;i<text.length;i++){
-    const c = text[i], next = text[i+1];
-    if(inQuotes){
-      if(c==='"' && next==='"'){ field+='"'; i++; }
-      else if(c==='"'){ inQuotes=false; }
-      else field += c;
-    } else {
-      if(c==='"') inQuotes = true;
-      else if(c===','){ row.push(field); field=''; }
-      else if(c==='\n' || c==='\r'){
-        if(c==='\r' && next==='\n') i++;
-        row.push(field); field='';
-        if(row.length>1 || row[0]!=='') rows.push(row);
-        row=[];
-      } else field += c;
-    }
-  }
-  if(field!=='' || row.length){ row.push(field); rows.push(row); }
-  return rows;
-}
-
-// mapas de normalización por variable, para tolerar variaciones de escritura
-const CATEGORY_LOOKUP = {};
-VARIABLES.forEach(v=>{
-  CATEGORY_LOOKUP[v.code] = {};
-  v.categorias.forEach(c=> CATEGORY_LOOKUP[v.code][normalize(c)] = c);
-});
-const PRODUCT_LOOKUP = {};
-PRODUCTS.forEach(p=> PRODUCT_LOOKUP[normalize(p.nombre)] = p.key);
-
-function matchCategory(code, raw){
-  if(!raw) return {value:null, ok:false};
-  const n = normalize(raw);
-  if(CATEGORY_LOOKUP[code][n]) return {value:CATEGORY_LOOKUP[code][n], ok:true};
-  return {value:raw, ok:false};
-}
-function matchProduct(raw){
-  if(!raw) return null;
-  const n = normalize(raw);
-  return PRODUCT_LOOKUP[n] || null;
-}
-
-let BATCH_DATA = []; // {meta, profile, explicit, results, breakdown, warnings}
-
-function processCSV(text){
-  const rows = parseCSV(text).filter(r=>r.some(c=>c && c.trim()!==''));
-  if(!rows.length) return {clients:[], errors:['El archivo está vacío.']};
-  const header = rows[0].map(h=>h.trim());
-  const idxOf = {};
-  header.forEach((h,i)=> idxOf[h]=i);
-  const missing = CSV_HEADERS.filter(h=>!(h in idxOf));
-  const errors = [];
-  if(missing.length) errors.push('Columnas faltantes en el CSV: '+missing.join(', ')+'. Usa la plantilla para evitar errores.');
-
-  const clients = [];
-  for(let r=1;r<rows.length;r++){
-    const row = rows[r];
-    const get = (h)=> idxOf[h]!==undefined ? (row[idxOf[h]]||'').trim() : '';
-    const profile = {};
-    const warnings = [];
-    VARIABLES.forEach(v=>{
-      const raw = get(v.code);
-      const m = matchCategory(v.code, raw);
-      if(!m.ok) warnings.push(`${v.code} sin coincidencia exacta ("${raw||'vacío'}") — score de esa variable = 0`);
-      profile[v.code] = m.ok ? m.value : (v.categorias[0]); // fallback neutro documentado en warning
-      if(!m.ok) profile[v.code+'__raw'] = raw;
-    });
-    const explicitRaw = get('producto_solicitado');
-    const explicit = matchProduct(explicitRaw);
-    if(explicitRaw && !explicit) warnings.push(`producto_solicitado "${explicitRaw}" no reconocido`);
-
-    const meta = {
-      nombre: get('nombre') || '(sin nombre)',
-      cedula: get('cedula'),
-      afiliado: get('afiliado') || 'No especificado'
-    };
-    const {results, breakdown} = computeScores(profile);
-    const ordered = reorderForExplicit(results, explicit);
-    clients.push({meta, profile, explicit, results:ordered, breakdown, warnings});
-  }
-  return {clients, errors};
-}
-
-const zone = document.getElementById('upload-zone');
-const fileInput = document.getElementById('file-input');
-['dragover','dragleave','drop'].forEach(evt=>{
-  zone.addEventListener(evt, (e)=>{
-    e.preventDefault();
-    if(evt==='dragover') zone.classList.add('drag');
-    else zone.classList.remove('drag');
-  });
-});
-zone.addEventListener('drop', (e)=>{
-  const f = e.dataTransfer.files[0];
-  if(f) handleFile(f);
-});
-fileInput.addEventListener('change', (e)=>{
-  if(e.target.files[0]) handleFile(e.target.files[0]);
-});
-
-function handleFile(file){
-  const status = document.getElementById('upload-status');
-  status.textContent = 'Procesando '+file.name+'…';
-  const reader = new FileReader();
-  reader.onload = (e)=>{
-    const {clients, errors} = processCSV(e.target.result);
-    BATCH_DATA = clients;
-    if(errors.length){
-      status.innerHTML = `<span style="color:var(--danger);">${errors.join(' ')}</span>`;
-    } else {
-      const warnCount = clients.filter(c=>c.warnings.length).length;
-      status.textContent = `${clients.length} clientes procesados` + (warnCount? ` · ${warnCount} con advertencias de formato (revisar en la tabla)` : '');
-    }
-    renderBatchResults();
-  };
-  reader.readAsText(file, 'UTF-8');
-}
-
-let batchSort = {field:'top1pct', dir:'desc'};
-let batchFilters = {afiliado:'', linea:'', producto:'', q:''};
-
-function renderBatchResults(){
-  const wrap = document.getElementById('batch-results');
-  if(!BATCH_DATA.length){
-    wrap.innerHTML = `<div class="card empty-state"><h3>Sin datos cargados</h3><p>Sube un CSV para ver el ranking de todos tus clientes.</p></div>`;
-    return;
-  }
-
-  let rows = BATCH_DATA.map((c,i)=>({...c, idx:i, top1:c.results[0], top2:c.results[1], top3:c.results[2]}));
-
-  if(batchFilters.afiliado) rows = rows.filter(r=>normalize(r.meta.afiliado)===normalize(batchFilters.afiliado));
-  if(batchFilters.linea) rows = rows.filter(r=>r.top1.linea===batchFilters.linea);
-  if(batchFilters.producto) rows = rows.filter(r=>r.top1.key===batchFilters.producto);
-  if(batchFilters.q){
-    const q = normalize(batchFilters.q);
-    rows = rows.filter(r=> normalize(r.meta.nombre).includes(q) || normalize(r.meta.cedula).includes(q));
-  }
-
-  rows.sort((a,b)=>{
-    let av, bv;
-    if(batchSort.field==='top1pct'){ av=a.top1.pct; bv=b.top1.pct; }
-    else if(batchSort.field==='nombre'){ av=normalize(a.meta.nombre); bv=normalize(b.meta.nombre); }
-    else if(batchSort.field==='afiliado'){ av=normalize(a.meta.afiliado); bv=normalize(b.meta.afiliado); }
-    if(av<bv) return batchSort.dir==='asc'?-1:1;
-    if(av>bv) return batchSort.dir==='asc'?1:-1;
-    return 0;
-  });
-
-  const productOpts = PRODUCTS.map(p=>`<option value="${p.key}" ${batchFilters.producto===p.key?'selected':''}>${p.nombre}</option>`).join('');
-
-  const tableRows = rows.map(r=>{
-    const warn = r.warnings.length ? `<div class="flag-warn" title="${r.warnings.join(' · ')}">⚠ ${r.warnings.length} advertencia(s)</div>` : '';
-    return `<tr class="rowclick" data-idx="${r.idx}">
-      <td>${r.meta.nombre}${r.meta.cedula?` <span class="muted mono" style="font-size:11px;">· ${r.meta.cedula}</span>`:''}${warn}</td>
-      <td><span class="${normalize(r.meta.afiliado)==='si'?'badge-afiliado-si':'badge-afiliado-no'}">${r.meta.afiliado}</span></td>
-      <td>${r.top1.nombre} ${r.explicit ? '<span class="tag-mode" style="background:var(--ink); color:#fff;">solicitado</span>' : ''}</td>
-      <td><span class="top3-linea ${lineaBadgeClass(r.top1.linea)}" style="margin:0;">${r.top1.linea}</span></td>
-      <td>${modoBadgeHTML(r.top1.key)}</td>
-      <td><div style="display:flex; align-items:center;"><div class="bar-track" style="width:80px;"><div class="bar-fill ${lineaClass(r.top1.linea)}" style="width:${Math.round(r.top1.pct*100)}%"></div></div><span class="score-txt">${pct(r.top1.pct)}</span></div></td>
-      <td class="muted" style="font-size:12.5px;">${r.top2.nombre}</td>
-      <td class="muted" style="font-size:12.5px;">${r.top3.nombre}</td>
-    </tr>
-    <tr class="detail-row" id="bdetail-${r.idx}" style="display:none;"><td colspan="8"><div class="detail-inner"></div></td></tr>`;
-  }).join('');
-
-  wrap.innerHTML = `
-    <div class="card card-pad" style="margin-bottom:16px;">
-      <div class="filter-row">
-        <select id="bf-afiliado"><option value="">Afiliado: todos</option><option value="Sí" ${batchFilters.afiliado==='Sí'?'selected':''}>Sí</option><option value="No" ${batchFilters.afiliado==='No'?'selected':''}>No</option></select>
-        <select id="bf-linea"><option value="">Línea: todas</option><option value="Familia" ${batchFilters.linea==='Familia'?'selected':''}>Familia</option><option value="Patrimonio" ${batchFilters.linea==='Patrimonio'?'selected':''}>Patrimonio</option></select>
-        <select id="bf-producto"><option value="">Producto top 1: todos</option>${productOpts}</select>
-        <input type="text" id="bf-q" placeholder="Buscar por nombre o cédula…" value="${batchFilters.q}">
-        <span class="count-pill">${rows.length} de ${BATCH_DATA.length} clientes</span>
-        <button class="btn btn-ghost" id="btn-export" style="margin-left:auto;">↓ Exportar CSV</button>
-      </div>
-    </div>
-    <div class="card">
-      <div style="padding:6px 10px 14px; overflow-x:auto;">
-        <table>
-          <thead><tr>
-            <th class="th-sort" data-field="nombre">Cliente</th>
-            <th class="th-sort" data-field="afiliado">Afiliado</th>
-            <th class="th-sort" data-field="top1pct">Top 1 sugerido</th>
-            <th>Línea</th>
-            <th>Cierre</th>
-            <th>% del máximo</th>
-            <th>Top 2</th>
-            <th>Top 3</th>
-          </tr></thead>
-          <tbody>${tableRows}</tbody>
-        </table>
-      </div>
-    </div>
-  `;
-
-  document.getElementById('bf-afiliado').addEventListener('change', e=>{ batchFilters.afiliado=e.target.value; renderBatchResults(); });
-  document.getElementById('bf-linea').addEventListener('change', e=>{ batchFilters.linea=e.target.value; renderBatchResults(); });
-  document.getElementById('bf-producto').addEventListener('change', e=>{ batchFilters.producto=e.target.value; renderBatchResults(); });
-  document.getElementById('bf-q').addEventListener('input', e=>{ batchFilters.q=e.target.value; renderBatchResults(); });
-  wrap.querySelectorAll('.th-sort').forEach(th=>{
-    th.addEventListener('click', ()=>{
-      const f = th.dataset.field;
-      batchSort.dir = (batchSort.field===f && batchSort.dir==='desc') ? 'asc' : 'desc';
-      batchSort.field = f;
-      renderBatchResults();
-    });
-  });
-  wrap.querySelectorAll('tr.rowclick').forEach(row=>{
-    row.addEventListener('click', ()=>{
-      const idx = row.dataset.idx;
-      const detail = document.getElementById('bdetail-'+idx);
-      const isOpen = detail.style.display !== 'none';
-      wrap.querySelectorAll('.detail-row').forEach(d=>d.style.display='none');
-      if(!isOpen){
-        const c = BATCH_DATA[idx];
-        const rankTable = `<table style="margin-bottom:10px;"><thead><tr><th></th><th>Producto</th><th>Línea</th><th>Cierre</th><th>% máx.</th><th style="text-align:right;">Score</th></tr></thead><tbody>
-          ${c.results.map(r=>`<tr><td class="rank-badge">#${r.rank}</td><td>${r.nombre}</td><td><span class="top3-linea ${lineaBadgeClass(r.linea)}" style="margin:0;">${r.linea}</span></td><td>${modoBadgeHTML(r.key)}</td><td>${pct(r.pct)}</td><td class="mono" style="text-align:right;">${r.score}/${r.max}</td></tr>`).join('')}
-        </tbody></table>`;
-        const warnHtml = c.warnings.length ? `<p class="flag-warn" style="margin-bottom:10px;">⚠ ${c.warnings.join(' · ')}</p>` : '';
-        detail.querySelector('.detail-inner').innerHTML = warnHtml + rankTable;
-        detail.style.display='table-row';
-      }
-    });
-  });
-  document.getElementById('btn-export').addEventListener('click', exportBatchCSV);
-}
-
-function exportBatchCSV(){
-  const header = ['nombre','cedula','afiliado','top1_producto','top1_pct','top1_score','top1_max','top1_cierre','top2_producto','top2_pct','top3_producto','top3_pct','solicitado_explicito','advertencias'];
-  const lines = [header.join(',')];
-  BATCH_DATA.forEach(c=>{
-    const t1=c.results[0], t2=c.results[1], t3=c.results[2];
-    const row = [
-      c.meta.nombre, c.meta.cedula, c.meta.afiliado,
-      t1.nombre, (t1.pct*100).toFixed(0)+'%', t1.score, t1.max,
-      modoCierre(t1.key)==='auto' ? 'Sin intermediario' : 'Con intermediario',
-      t2.nombre, (t2.pct*100).toFixed(0)+'%',
-      t3.nombre, (t3.pct*100).toFixed(0)+'%',
-      c.explicit ? PRODUCTS.find(p=>p.key===c.explicit).nombre : '',
-      c.warnings.join(' | ')
-    ].map(v=>`"${(v||'').toString().replace(/"/g,'""')}"`);
-    lines.push(row.join(','));
-  });
-  downloadBlob(lines.join('\n'), 'resultados_perfilador_colsubsidio.csv', 'text/csv;charset=utf-8;');
-}
-
 /* =========================================================================
-   Tab 3 — referencia
+   Tab 2 — referencia
    ========================================================================= */
 document.getElementById('ref-sources').innerHTML = SOURCES.map(s=>`
   <div class="source-row"><b>${s[0]}</b>${s[1]}<div class="src-meta">${s[2]}</div></div>

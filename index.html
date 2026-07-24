@@ -306,7 +306,7 @@
       <div class="brand-row" style="align-items:flex-start;">
         <div style="max-width:640px;">
           <h3>Perfilá al cliente y vendé al instante</h3>
-          <p class="muted" style="margin-top:6px;">Hiperpersonalización en vivo: contesta según el perfil del cliente afiliado o no afiliado a Colsubsidio y el motor decide si el producto recomendado se puede cerrar solo — <b>autos, motos, bicicletas, patinetas, hogar, mascotas, exequias</b> — o necesita asesoría personalizada — <b>salud, vida, educación</b>.</p>
+          <p class="muted" style="margin-top:6px;">Hiperpersonalización en vivo: contesta según el perfil del cliente afiliado o no afiliado a Colsubsidio y el motor decide si el producto recomendado se puede cerrar solo — <b>autos, motos, bicicletas, patinetas eléctricas, hogar, mascotas, exequias</b> — o necesita asesoría personalizada — <b>salud, vida, educación</b>.</p>
         </div>
         <div class="radio-row" id="sell-ctx-toggle" style="max-width:300px; min-width:260px;">
           <label class="radio-pill checked-si" data-ctx="afiliado">Cliente afiliado</label>
@@ -546,7 +546,7 @@
           <div class="journey-split">
             <div class="action-panel auto" style="margin-top:0;" id="s5-auto">
               <h4 style="font-size:13.5px;">Sin intermediario</h4>
-              <p style="margin:4px 0 0; font-size:12px;">Autos, motos, bicicletas/patinetas, hogar, mascotas, exequial, accidentes y arrendamiento — se cotizan y cierran solos.</p>
+              <p style="margin:4px 0 0; font-size:12px;">Autos, motos, bicicletas/patinetas eléctricas, hogar, mascotas, exequial, accidentes y arrendamiento — se cotizan y cierran solos.</p>
             </div>
             <div class="action-panel asesoria" style="margin-top:0;" id="s5-asesoria">
               <h4 style="font-size:13.5px;">Con intermediario</h4>
@@ -607,7 +607,7 @@ const PRODUCTS = [
   {key:'mascotas',      nombre:'Seguro de mascotas',                 linea:'Familia'},
   {key:'autos',         nombre:'Todo riesgo autos y motos',          linea:'Patrimonio'},
   {key:'hogar',         nombre:'Todo riesgo hogar',                  linea:'Patrimonio'},
-  {key:'bicicletas',    nombre:'Bicicletas y patinetas',             linea:'Patrimonio'},
+  {key:'bicicletas',    nombre:'Bicicletas y patinetas eléctricas',  linea:'Patrimonio'},
   {key:'arrendamiento', nombre:'Arrendamiento',                      linea:'Patrimonio'},
   {key:'educacion',     nombre:'Educación',                          linea:'Familia'},
 ];
@@ -623,7 +623,7 @@ const VARIABLES = [
   {code:'V7',  label:'¿Es propietario que arrienda un inmueble a terceros?', categorias:['Sí','No']},
   {code:'V8',  label:'Tenencia de vehículo', categorias:['Carro','Moto','No tiene']},
   {code:'V9',  label:'¿Tiene mascota (perro o gato)?', categorias:['Sí','No']},
-  {code:'V10', label:'¿Usa bicicleta como transporte o deporte habitual?', categorias:['Sí','No']},
+  {code:'V10', label:'¿Usa bicicleta o patineta eléctrica como transporte o deporte habitual?', categorias:['Sí','No']},
   {code:'V11', label:'¿Es jefatura de hogar femenina sin pareja?', categorias:['Sí','No']},
 ];
 
@@ -678,7 +678,7 @@ const WEIGHTS = {
 };
 
 const RATIONALE = {
-  'V1|18-25 años':'Prioridad en bicicleta y mascota (perfil joven urbano); vida y cáncer casi irrelevantes a esta edad.',
+  'V1|18-25 años':'Prioridad en bicicleta/patineta eléctrica y mascota (perfil joven urbano); vida y cáncer casi irrelevantes a esta edad.',
   'V1|26-35 años':'Edad pico de tenencia de mascota (30-50 años, SURA) y de arriendo (DANE); comienza a evaluar vida y autos.',
   'V1|36-45 años':'Pico de compra de vivienda y auto propio; arranca la lógica HLV/DIME de vida por responsabilidades familiares.',
   'V1|46-55 años':'21,7% de casos de cáncer ocurre en 55-64 años, el riesgo ya es relevante desde los 46; renta por hospitalización sube.',
@@ -692,7 +692,7 @@ const RATIONALE = {
   'V4|Bajo (< $1.3M)':'Capacidad de pago limitada a prima baja; exequial tiene fuerte arraigo cultural en estratos bajos.',
   'V4|Medio ($1.3M - $4.6M)':'Segmento de clase media (32-34% de la población, DANE) — el segmento con mayor potencial de conversión.',
   'V4|Alto (> $4.6M)':'Mayor probabilidad de vivienda y vehículo propios; foco en salud complementaria y patrimonio.',
-  'V5|Soltero(a) sin hijos':'Sin dependientes económicos; prioridad en mascota, bicicleta y accidentes personales sobre vida.',
+  'V5|Soltero(a) sin hijos':'Sin dependientes económicos; prioridad en mascota, bicicleta/patineta eléctrica y accidentes personales sobre vida.',
   'V5|Pareja sin hijos':'Enfoque en patrimonio compartido (hogar, auto) y mascota.',
   'V5|Con hijos menores de edad':'Máxima prioridad en vida y salud familiar (lógica HLV/DIME); sube renta por hospitalización y educación.',
   'V5|Monoparental con hijos':'24,3% de los hogares (DANE); único proveedor, vida, exequial y educación son críticos.',
@@ -707,7 +707,7 @@ const RATIONALE = {
   'V8|No tiene':'Sin relevancia para productos de vehículo.',
   'V9|Sí':'Oportunidad de venta cruzada directa de Mascotas.',
   'V9|No':'Sin relevancia en esta variable.',
-  'V10|Sí':'Oportunidad de venta cruzada directa de Bicicletas y patinetas (hurto cada 2,5h en Bogotá, 2025).',
+  'V10|Sí':'Oportunidad de venta cruzada directa de Bicicletas y patinetas eléctricas (hurto cada 2,5h en Bogotá, 2025).',
   'V10|No':'Sin relevancia en esta variable.',
   'V11|Sí':'46,5% jefatura femenina, 68,8% sin pareja (DANE) — foco especial del ICP de soycaropinzón; también sube educación por ser único proveedor.',
   'V11|No':'Sin relevancia en esta variable.',
@@ -728,7 +728,7 @@ const CHECKLIST = {
   mascotas:{modo:'Sin intermediario', items:['Cédula del propietario', 'Género del propietario', 'Fecha de nacimiento', 'Tipo de mascota (perro/gato)', 'Edad de la mascota', 'Raza (define si es de alta peligrosidad)', 'Género de la mascota']},
   autos:{modo:'Sin intermediario', items:['Placa', 'Si es 0 km: marca, referencia y modelo', 'Cédula del propietario', 'Género', 'Fecha de nacimiento', 'Ciudad de circulación']},
   hogar:{modo:'Sin intermediario', items:['Cédula del propietario', '¿Vivienda propia o arrendada?', 'Estrato (dirección)', 'Valor comercial del inmueble', 'Tipo: casa, apto o finca recreo', 'Sector rural o urbano', 'Ciudad']},
-  bicicletas:{modo:'Sin intermediario', items:['Cédula', 'Fecha de nacimiento', 'Ciudad de residencia', 'Valor del equipo (patineta o bicicleta)']},
+  bicicletas:{modo:'Sin intermediario', items:['Cédula', 'Fecha de nacimiento', 'Ciudad de residencia', 'Valor del equipo (bicicleta o patineta eléctrica)']},
   accidentes:{modo:'Sin intermediario', items:null},
   renta:{modo:'Con intermediario', items:null},
   cancer:{modo:'Con intermediario', items:null},
@@ -747,7 +747,7 @@ const SOURCES = [
   ['Autos y motos','Solo 12,2% del parque tiene todo riesgo (27% carros, 2,8-3% motos).','Fasecolda, 2024-2025'],
   ['Hogar','Solo 9,3% de hogares con seguro de vivienda voluntario; +70% atadas a hipoteca.','Fasecolda / Semana, mar-2026'],
   ['Mascotas','60-70% de hogares tiene mascota; mercado crece 40% anual.','DANE / Kantar / SURA, 2024-2026'],
-  ['Bicicletas','Hurto de una bicicleta cada 2,5h en Bogotá (2025).','Secretaría de Seguridad Bogotá, 2024-2026'],
+  ['Bicicletas y patinetas eléctricas','Hurto de una bicicleta cada 2,5h en Bogotá (2025); el parque de patinetas eléctricas crece rápido y sin cifra de aseguramiento consolidada.','Secretaría de Seguridad Bogotá, 2024-2026'],
   ['Arrendamiento','Costo típico 40-75% de un canon; 1 de cada 4 contratos termina en conflicto.','Coriesgos / Inmobiliare Latam, 2026'],
   ['Estratos e ingreso','Clase media $853.608-$4.596.352 (32-34% de la población).','DANE, GEIH 2024'],
   ['Representatividad Colsubsidio','Afilia principalmente trabajadores dependientes formales — mayor formalidad que el promedio nacional.','Supuesto de trabajo — no público'],
@@ -816,7 +816,7 @@ document.querySelectorAll('.tabbtn').forEach(btn=>{
 const SHORT = {
   vida:'Vida', accidentes:'Acc. pers.', renta:'Renta hosp.', cancer:'Cáncer',
   salud:'Salud', exequial:'Exequial', mascotas:'Mascotas', autos:'Autos/motos',
-  hogar:'Hogar', bicicletas:'Bici/patineta', arrendamiento:'Arriendo', educacion:'Educación'
+  hogar:'Hogar', bicicletas:'Bici/pat.eléc.', arrendamiento:'Arriendo', educacion:'Educación'
 };
 // Variables que Colsubsidio, como caja de compensación, probablemente ya tiene de sus afiliados
 // (nómina, EPS, subsidio familiar) — ver pregunta abierta #1 de la Guía y Metodología.
@@ -872,7 +872,7 @@ function renderCtxNote(){
   const note = document.getElementById('ctx-note');
   if(CTX.mode==='afiliado'){
     note.innerHTML = `<h4 style="margin-bottom:6px;">Cliente afiliado</h4>
-      <p class="muted" style="margin:0;">Colsubsidio ya conoce a este cliente: <b>edad, género, situación laboral, nivel de ingreso y composición familiar</b> deberían poder consultarse en las bases de la caja (nómina, EPS, subsidio familiar) en vez de preguntarse — es la pregunta abierta #1 de la metodología, pendiente de validar con el equipo técnico. Lo que la caja no registra y sí conviene confirmar en la conversación son los datos de estilo de vida: vivienda, si arrienda a terceros, vehículo, mascota y bicicleta.</p>`;
+      <p class="muted" style="margin:0;">Colsubsidio ya conoce a este cliente: <b>edad, género, situación laboral, nivel de ingreso y composición familiar</b> deberían poder consultarse en las bases de la caja (nómina, EPS, subsidio familiar) en vez de preguntarse — es la pregunta abierta #1 de la metodología, pendiente de validar con el equipo técnico. Lo que la caja no registra y sí conviene confirmar en la conversación son los datos de estilo de vida: vivienda, si arrienda a terceros, vehículo, mascota y bicicleta/patineta eléctrica.</p>`;
   } else {
     note.innerHTML = `<h4 style="margin-bottom:6px;">Cliente no afiliado</h4>
       <p class="muted" style="margin:0;">Sin historial en Colsubsidio: todo se pregunta. La metodología recomienda un formulario de autogestión de <b>máximo 5–6 preguntas</b> (pregunta abierta #4). La lista de «Variables más influyentes» a la izquierda queda marcada con las 6 de mayor impacto en el score — son las que más retorno dan en un formulario corto.</p>`;

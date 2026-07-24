@@ -23,7 +23,7 @@ python3 -m http.server 8000
   - `VARIABLES` — las 11 variables de segmentación (V1–V11) con sus categorías posibles.
   - `WEIGHTS` — objeto `"Vx|categoría" → [12 pesos, uno por producto]`. Las primeras 11 columnas son la Matriz de Pesos del Excel tal cual; la 12ª (`educacion`) es una adición razonada por analogía, no calibrada.
   - `RATIONALE` — mismo keying que `WEIGHTS`, texto del racional/fuente resumida.
-  - `CHECKLIST` — datos requeridos para cotizar por producto (del PDF), y el campo `modo` (`'Sin intermediario'` / `'Con intermediario'`) que define el modo de cierre comercial de cada producto — única fuente de verdad, ver `modoCierre()`. Algunos productos (`accidentes`, `renta`, `cancer`, `arrendamiento`, `educacion`) no tienen checklist documentado (`items:null`) — se marca explícitamente en vez de inventarse; su `modo` sí es una asunción de proceso comercial declarada como tal.
+  - `CHECKLIST` — datos requeridos para cotizar por producto, tomados de `datos-cotizacion-colsubsidio_md.pdf`, y el campo `modo` (`'Sin intermediario'` / `'Con intermediario'`) que define el modo de cierre comercial de cada producto — única fuente de verdad, ver `modoCierre()`. `accidentes`, `renta`, `cancer` y `arrendamiento` no aparecen en ese PDF, así que siguen con `items:null`; su `modo` sí es una asunción de proceso comercial declarada como tal.
   - `SOURCES` — tabla de fuentes (Fasecolda, DANE, INC, etc.) para la pestaña de referencia.
 - **Funciones núcleo**:
   - `computeScores(profile)` — dado un perfil `{V1: categoría, ..., V11: categoría}`, suma los pesos por producto y devuelve ranking + desglose. Ordena por score crudo descendente (así rankea el Excel original, no por %).
@@ -43,13 +43,15 @@ python3 -m http.server 8000
 - **El campo "afiliado" no tiene peso propio en la matriz.** Es una etiqueta/filtro que además decide qué preguntas mostrar en el formulario de la pestaña 1. La guía original del Excel señala que probablemente el peso de "Formal dependiente" deba subir una vez haya datos reales de afiliados — está documentado en `RATIONALE` y en las notas de la app, no lo cambies sin ese dato real.
 - **El ranking se ordena por score crudo, no por %**, para calzar con el simulador del Excel (ver `computeScores`). Si algún día se normaliza distinto, hay que decidirlo con el equipo, no cambiarlo silenciosamente.
 - **El modo de cierre (`CHECKLIST.modo`) es una capa de proceso comercial, no de scoring.** Cambiarlo no debe tocar `WEIGHTS` ni el ranking — solo decide si la pestaña 1 muestra el flujo de cierre automatizado o el de asesoría.
-- **Los productos sin checklist documentado** (`accidentes`, `renta`, `cancer`, `arrendamiento`, `educacion`) deben seguir marcados como "sin datos documentados" hasta que llegue el checklist real — no rellenar con supuestos. Su `modo` de cierre sí es una asunción declarada (ver comentario junto a `CHECKLIST` en el código), a validar con Colsubsidio.
-- **Los pesos de `educacion` no vienen del Excel original.** Es un producto nuevo agregado para cubrir la categoría "con intermediario" del negocio; sus pesos son un punto de partida razonado por analogía con vida/salud, no un dato calibrado — no lo trates como si tuviera el mismo respaldo que el resto de la matriz.
+- **Los productos sin checklist documentado** (`accidentes`, `renta`, `cancer`, `arrendamiento`) deben seguir marcados como "sin datos documentados" hasta que llegue el checklist real — no rellenar con supuestos. Su `modo` de cierre sí es una asunción declarada (ver comentario junto a `CHECKLIST` en el código), a validar con Colsubsidio.
+- **Los pesos de `educacion` no vienen del Excel original**, aunque su checklist ya sí (viene de `datos-cotizacion-colsubsidio_md.pdf`, que confirma que sí es un producto real del portafolio). Sus pesos siguen siendo un punto de partida razonado por analogía con vida/salud, no un dato calibrado — no los trates como si tuvieran el mismo respaldo que el resto de la matriz.
+- **`datos-cotizacion-colsubsidio_md.pdf` también lista "Viajes"** (sin intermediario: cédula, fecha de nacimiento, fechas de salida/regreso, país de destino) como producto del portafolio. No está en `PRODUCTS` — agregarlo requeriría estimar sus 11 pesos sin respaldo del Excel, igual que se hizo con Educación. No agregarlo sin decidirlo con el equipo primero.
 
 ## Ideas abiertas / próximos pasos razonables
 
 - Conectar `WEIGHTS` a Supabase en vez de tenerlo hardcodeado, para poder recalibrar sin tocar código (ver preguntas abiertas de la Guía y Metodología del Excel original sobre datos reales de afiliados).
 - Sumar el matiz "afiliado" como variable real de la matriz de pesos cuando haya datos de conversión histórica para calibrarlo.
-- Validar con Colsubsidio si Educación es un producto real del portafolio de seguros o se maneja por otro canal de la caja, y recalibrar sus pesos con datos reales.
+- Recalibrar los pesos de `educacion` con datos reales (el checklist ya está confirmado, faltan los pesos).
+- Decidir con el equipo si se agrega Viajes como producto 13, y con qué pesos de partida.
 - Integrar con Hola Seggu / n8n para automatizar el paso de la ficha de cierre (o el resumen para asesor) generada en la pestaña 1 a cotización/pago en línea o a agendamiento de la asesoría.
 - Persistir el perfil y la ficha generada (hoy vive solo en memoria del navegador, se pierde al recargar).

@@ -365,7 +365,8 @@
             <li>¿Existen datos históricos de qué seguro cotizó y compró cada perfil? Permitiría pasar de reglas a un modelo estadístico calibrado.</li>
             <li>¿Qué nivel de ingreso, estrato y tipo de afiliación predomina en la base de afiliados? Podría cambiar los pesos del modelo.</li>
             <li>Para el 10% de usuarios externos sin historial, ¿qué 5–6 preguntas se les puede pedir sin fricción en el formulario de autogestión?</li>
-            <li>¿Educación es un producto real del portafolio Colsubsidio o se maneja por otro canal (caja de compensación)? Sus pesos y checklist son provisionales — ver nota en `WEIGHTS`.</li>
+            <li>Educación sí aparece en el checklist fuente de cotización, así que es un producto real del portafolio — pero sus pesos en `WEIGHTS` siguen siendo una estimación por analogía, no vienen del Excel original. Falta calibrarlos con datos reales.</li>
+            <li>El documento de cotización también lista <b>Viajes</b> como producto sin intermediario (cédula, fecha de nacimiento, fechas de salida/regreso, país de destino) — no está incluido todavía en el motor de scoring porque agregarlo implica estimar sus 11 pesos sin respaldo del Excel, igual que se hizo con Educación. Pendiente de decidir si se agrega.</li>
           </ul>
         </div>
       </div>
@@ -596,14 +597,16 @@ const RATIONALE = {
 // CHECKLIST[key].modo también define el MODO DE CIERRE del producto (ver modoCierre()):
 //  'Sin intermediario' → cierre automatizado / autogestionado, sin asesor.
 //  'Con intermediario'  → requiere asesoría personalizada.
-// Para accidentes, renta, cancer, arrendamiento y educacion no hay checklist fuente documentado
+// Fuente de los items: datos-cotizacion-colsubsidio_md.pdf ("Datos clave para cotización — Portafolio
+// Colsubsidio"). Para accidentes, renta, cancer y arrendamiento ese documento no trae checklist
 // (items:null) — el modo sí se define como asunción de proceso comercial razonada, marcada explícitamente
 // como pendiente de validar con Colsubsidio en vez de inventar los items.
 const CHECKLIST = {
   vida:{modo:'Con intermediario', items:['Cédula', 'Fecha de nacimiento', 'Género', '¿Conduce moto? Sí/No', '¿Actividades de alto riesgo? Sí/No', 'Valor a asegurar', 'Ocupación o profesión', '— Vida oneroso: valor del crédito', '— Vida ahorro: valor de la póliza + ahorro mensual deseado']},
   salud:{modo:'Con intermediario', items:['Cédula', 'Fecha de nacimiento', 'Ciudad', 'Preexistencias (diabetes, cáncer, VIH, etc.)', 'Coberturas preferidas (maternidad, cáncer, alto costo)', 'Ocupación']},
+  educacion:{modo:'Con intermediario', items:['Cédula del asegurado (quien compra el seguro)', 'Fecha de nacimiento del asegurado', 'Ocupación', 'Ciudad de residencia', 'Fecha de nacimiento del hijo', 'Grado de escolaridad', 'Valor mensual o anual que está dispuesto a invertir en la educación del hijo, o valor que desea asegurar para sus estudios']},
   exequial:{modo:'Sin intermediario', items:['Cédula del afiliado principal', 'Grupo familiar (padres, hijos, tíos, hermanos, primos)', 'Edades de cada uno']},
-  mascotas:{modo:'Sin intermediario', items:['Cédula del propietario', 'Género del propietario', 'Fecha de nacimiento', 'Tipo de mascota (perro/gato)', 'Edad de la mascota', 'Raza', 'Género de la mascota']},
+  mascotas:{modo:'Sin intermediario', items:['Cédula del propietario', 'Género del propietario', 'Fecha de nacimiento', 'Tipo de mascota (perro/gato)', 'Edad de la mascota', 'Raza (define si es de alta peligrosidad)', 'Género de la mascota']},
   autos:{modo:'Sin intermediario', items:['Placa', 'Si es 0 km: marca, referencia y modelo', 'Cédula del propietario', 'Género', 'Fecha de nacimiento', 'Ciudad de circulación']},
   hogar:{modo:'Sin intermediario', items:['Cédula del propietario', '¿Vivienda propia o arrendada?', 'Estrato (dirección)', 'Valor comercial del inmueble', 'Tipo: casa, apto o finca recreo', 'Sector rural o urbano', 'Ciudad']},
   bicicletas:{modo:'Sin intermediario', items:['Cédula', 'Fecha de nacimiento', 'Ciudad de residencia', 'Valor del equipo (patineta o bicicleta)']},
@@ -611,7 +614,6 @@ const CHECKLIST = {
   renta:{modo:'Con intermediario', items:null},
   cancer:{modo:'Con intermediario', items:null},
   arrendamiento:{modo:'Sin intermediario', items:null},
-  educacion:{modo:'Con intermediario', items:null},
 };
 
 const SOURCES = [

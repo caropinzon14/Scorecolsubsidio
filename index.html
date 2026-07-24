@@ -738,6 +738,8 @@ function computeInfluence(){
 const INFLUENCE = computeInfluence();
 const MAX_INFLUENCE = INFLUENCE[0].influence;
 const TOP_INFLUENCE_CODES = INFLUENCE.slice(0,6).map(v=>v.code);
+const INFLUENCE_BY_CODE = {};
+INFLUENCE.forEach(v=> INFLUENCE_BY_CODE[v.code] = v);
 
 function weightColor(w){
   const bg = ['#EFEFE7','#FBDBC3','#F7C098','#F1A06C','#E1602B','#8a3915'][w];
@@ -796,7 +798,8 @@ function renderMatrix(){
   const openCodes = new Set(Array.from(wrap.querySelectorAll('.accordion-group.open')).map(g=>g.dataset.code));
   const firstRender = openCodes.size===0 && wrap.children.length===0;
 
-  wrap.innerHTML = INFLUENCE.map((v,vi)=>{
+  wrap.innerHTML = VARIABLES.map((v,vi)=>{
+    const influence = INFLUENCE_BY_CODE[v.code].influence;
     const rows = v.categorias.map(cat=>{
       const key = v.code+'|'+cat;
       const w = WEIGHTS[key] || new Array(PRODUCTS.length).fill(0);
@@ -814,7 +817,7 @@ function renderMatrix(){
       <div class="accordion-head">
         <span class="accordion-caret">›</span>
         <div class="ah-left"><span class="ah-code">${v.code}</span><strong>${v.label}</strong></div>
-        <div class="ah-influence influence-bar-track"><div class="influence-bar-fill" style="width:${Math.round(v.influence/MAX_INFLUENCE*100)}%"></div></div>
+        <div class="ah-influence influence-bar-track"><div class="influence-bar-fill" style="width:${Math.round(influence/MAX_INFLUENCE*100)}%"></div></div>
       </div>
       <div class="accordion-body">
         <table class="heat-table">

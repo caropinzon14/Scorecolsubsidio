@@ -219,6 +219,33 @@
   .ficha-output{margin-top:14px; background:#132339; color:#DCE3EE; border-radius:8px; padding:14px 16px; font-family:'IBM Plex Mono',monospace; font-size:11.5px; white-space:pre-wrap; line-height:1.55; max-height:340px; overflow:auto;}
   .ficha-actions{display:flex; gap:10px; margin-top:10px; flex-wrap:wrap;}
   .copy-ok{color:var(--teal); font-size:12px; font-weight:600; margin-left:4px;}
+
+  /* ---------- Tab 3: recorrido de compra ---------- */
+  .journey-wrap{position:relative; padding-left:54px;}
+  .journey-line{position:absolute; left:21px; top:6px; bottom:6px; width:2px; background:var(--line);}
+  .journey-stage{position:relative; margin-bottom:30px;}
+  .journey-stage:last-child{margin-bottom:0;}
+  .journey-num{position:absolute; left:-54px; top:0; width:36px; height:36px; border-radius:50%; background:var(--ink); color:#fff; display:flex; align-items:center; justify-content:center; font-family:'IBM Plex Mono',monospace; font-weight:600; font-size:14px; z-index:1;}
+  .journey-stage h4{font-size:15px; margin-bottom:6px;}
+  .journey-split{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:12px;}
+  @media (max-width:720px){ .journey-split{grid-template-columns:1fr;} }
+  .journey-note{border-radius:8px; padding:10px 12px; font-size:12.5px; line-height:1.5;}
+  .journey-note.afiliado{background:var(--teal-tint); color:var(--teal);}
+  .journey-note.no-afiliado{background:#F1F2EC; color:var(--ink-soft);}
+  .journey-note-label{display:block; font-family:'IBM Plex Mono',monospace; font-size:10px; text-transform:uppercase; letter-spacing:.05em; margin-bottom:4px; opacity:.85;}
+
+  .chip{display:inline-flex; align-items:center; gap:6px; padding:6px 12px; border-radius:999px; border:1px solid var(--line); font-size:12px; cursor:pointer; background:#fff; user-select:none;}
+  .chip:hover{border-color:var(--ink-soft);}
+  .chip.active{background:var(--accent-tint); border-color:var(--accent); color:var(--accent-ink); font-weight:600;}
+  .chip .dot{width:6px; height:6px; border-radius:50%; display:inline-block;}
+  .engine-picker{display:flex; flex-wrap:wrap; gap:6px; margin-top:10px;}
+  .engine-rules{margin-top:2px;}
+  .engine-rule-row{display:flex; align-items:flex-start; gap:10px; padding:8px 0; border-bottom:1px solid #EEEEE6;}
+  .engine-rule-row:last-child{border-bottom:none;}
+  .engine-rule-weight{font-family:'IBM Plex Mono',monospace; font-weight:700; width:26px; height:26px; border-radius:6px; display:flex; align-items:center; justify-content:center; flex:none; font-size:12.5px;}
+  .engine-rule-body{flex:1; min-width:0;}
+  .engine-rule-var{font-size:12.5px; font-weight:600;}
+  .engine-rule-rat{font-size:11px; color:var(--ink-soft); margin-top:2px; line-height:1.4;}
 </style>
 </head>
 <body>
@@ -238,6 +265,7 @@
       <button class="tabbtn active" data-tab="sell"><span class="num">01</span>Perfilar y vender</button>
       <button class="tabbtn" data-tab="individual"><span class="num">02</span>Explorador de variables</button>
       <button class="tabbtn" data-tab="ref"><span class="num">03</span>Referencia y fuentes</button>
+      <button class="tabbtn" data-tab="journey"><span class="num">04</span>Recorrido de compra</button>
     </nav>
   </div>
 </div>
@@ -352,6 +380,91 @@
       <h3 style="margin-bottom:4px;">Datos requeridos para cotizar, por producto</h3>
       <p class="muted" style="margin-bottom:14px;">Checklist tomado del portafolio Colsubsidio. Los productos marcados «sin datos documentados» no aparecen en el checklist fuente — usar datos base y validar con Colsubsidio.</p>
       <div id="ref-checklists" class="ref-grid"></div>
+    </div>
+  </section>
+
+  <!-- ============ TAB 3: RECORRIDO DE COMPRA ============ -->
+  <section class="tabpanel" id="tab-journey">
+    <div class="card card-pad" style="margin-bottom:20px;">
+      <h3>Del "no sé qué seguro necesito" a la póliza comprada</h3>
+      <p class="muted" style="margin-top:6px;">Las mismas 12 pólizas y el mismo motor de reglas — pero el camino cambia según si el cliente es afiliado o no afiliado a Colsubsidio, y termina en cierre automatizado o en asesoría personalizada según la categoría del producto recomendado.</p>
+    </div>
+
+    <div class="card card-pad">
+      <div class="journey-wrap">
+        <div class="journey-line"></div>
+
+        <div class="journey-stage">
+          <div class="journey-num">1</div>
+          <h4>No sabe qué seguro necesita</h4>
+          <p class="muted" style="margin:0;">El cliente llega sin tener claro qué producto le sirve — el motor de reglas es el que decide, no un catálogo que hay que navegar.</p>
+          <div class="journey-split">
+            <div class="journey-note afiliado"><span class="journey-note-label">Afiliado</span>Entra por un canal propio de Colsubsidio: app, oficina o campaña interna dirigida a la base de afiliados.</div>
+            <div class="journey-note no-afiliado"><span class="journey-note-label">No afiliado</span>Llega por pauta, redes o WhatsApp de Hola Seggu — sin ninguna relación previa con Colsubsidio.</div>
+          </div>
+        </div>
+
+        <div class="journey-stage">
+          <div class="journey-num">2</div>
+          <h4>¿Es afiliado a Colsubsidio?</h4>
+          <p class="muted" style="margin:0;">La primera pregunta del flujo: decide cuántos datos hay que pedirle después.</p>
+          <div class="journey-split">
+            <div class="journey-note afiliado"><span class="journey-note-label">Afiliado</span>Se identifica con su cédula. En producción, Colsubsidio ya tendría su relación laboral, EPS y subsidio familiar en sus bases (integración pendiente — ver pestaña Referencia).</div>
+            <div class="journey-note no-afiliado"><span class="journey-note-label">No afiliado</span>Sin historial: no hay nada que autocompletar, todo el perfil se construye desde cero en la conversación.</div>
+          </div>
+        </div>
+
+        <div class="journey-stage">
+          <div class="journey-num">3</div>
+          <h4>El motor de reglas perfila al cliente</h4>
+          <p class="muted" style="margin:0 0 8px;">11 variables, 12 productos, un peso de 0 a 5 por combinación variable–categoría. Elige un producto para ver qué variables lo mueven más — ese es, literalmente, el motor de reglas de esa póliza.</p>
+          <div class="journey-split">
+            <div class="journey-note afiliado"><span class="journey-note-label">Afiliado</span>V1–V5 (edad, género, situación laboral, ingreso, composición familiar) vienen pre-cargados. Solo se pregunta lo de estilo de vida: V6–V11.</div>
+            <div class="journey-note no-afiliado"><span class="journey-note-label">No afiliado</span>Formulario corto de autogestión: las 5–6 variables de mayor impacto primero, el resto queda opcional.</div>
+          </div>
+          <div class="engine-picker" id="engine-picker"></div>
+          <div id="engine-panel"></div>
+        </div>
+
+        <div class="journey-stage">
+          <div class="journey-num">4</div>
+          <h4>Recomendación hiperpersonalizada</h4>
+          <p class="muted" style="margin:0;">Se suman los pesos de las 11 variables por producto y se ordena por score — igual para afiliados y no afiliados. Si el cliente pidió un producto puntual, ese sube al puesto 1 y las otras dos sugerencias de mayor score quedan como complemento (ver pestaña Perfilar y vender).</p>
+        </div>
+
+        <div class="journey-stage">
+          <div class="journey-num">5</div>
+          <h4>Enrutamiento: cierre automatizado o asesoría</h4>
+          <p class="muted" style="margin:0 0 8px;">Depende del producto recomendado, no del tipo de cliente.</p>
+          <div class="journey-split">
+            <div class="action-panel auto" style="margin-top:0;">
+              <h4 style="font-size:13.5px;">Sin intermediario</h4>
+              <p style="margin:4px 0 0; font-size:12px;">Autos, motos, bicicletas/patinetas, hogar, mascotas, exequial, accidentes y arrendamiento — se cotizan y cierran solos.</p>
+            </div>
+            <div class="action-panel asesoria" style="margin-top:0;">
+              <h4 style="font-size:13.5px;">Con intermediario</h4>
+              <p style="margin:4px 0 0; font-size:12px;">Salud, vida, educación, renta por hospitalización y cáncer — pasan a un asesor certificado.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="journey-stage">
+          <div class="journey-num">6</div>
+          <h4>Seguro comprado</h4>
+          <p class="muted" style="margin:0 0 8px;">El punto de llegada del recorrido, distinto según cómo se cerró.</p>
+          <div class="journey-split">
+            <div class="action-panel auto" style="margin-top:0;">
+              <h4 style="font-size:13.5px;">Cierre automatizado</h4>
+              <p style="margin:4px 0 0; font-size:12px;">Cotiza y paga en línea con los datos del checklist; la póliza queda emitida casi al instante (checkout real: integración pendiente con Hola Seggu / n8n).</p>
+            </div>
+            <div class="action-panel asesoria" style="margin-top:0;">
+              <h4 style="font-size:13.5px;">Con asesoría</h4>
+              <p style="margin:4px 0 0; font-size:12px;">El asesor certificado cierra la venta en la llamada agendada; la póliza se emite tras la validación de underwriting.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
     </div>
   </section>
 
@@ -933,6 +1046,69 @@ document.getElementById('ref-checklists').innerHTML = checklistOrder.map(key=>{
   const p = PRODUCTS.find(pp=>pp.key===key);
   return `<details><summary>${p.nombre}</summary><div class="details-body">${buildChecklistHTML(key)}</div></details>`;
 }).join('');
+
+/* =========================================================================
+   Tab 3 — recorrido de compra (motor de reglas por tipo de seguro)
+   ========================================================================= */
+// para un producto, la categoría de mayor peso en cada variable — es el "motor de reglas" leído por producto
+// en vez de por variable (que es como ya se lee en el Explorador).
+function topRulesForProduct(productKey, n){
+  const idx = PRODUCTS.findIndex(p=>p.key===productKey);
+  const rows = VARIABLES.map(v=>{
+    let best = {variable:v.label, code:v.code, categoria:v.categorias[0], peso:0, racional:''};
+    v.categorias.forEach(cat=>{
+      const w = (WEIGHTS[v.code+'|'+cat] || [])[idx] || 0;
+      if(w > best.peso) best = {variable:v.label, code:v.code, categoria:cat, peso:w, racional:RATIONALE[v.code+'|'+cat]||''};
+    });
+    return best;
+  });
+  rows.sort((a,b)=> b.peso - a.peso);
+  return n ? rows.slice(0,n) : rows;
+}
+
+const ENGINE = { selected: 'autos' };
+
+function renderEnginePicker(){
+  const wrap = document.getElementById('engine-picker');
+  wrap.innerHTML = PRODUCTS.map(p=>`
+    <div class="chip ${ENGINE.selected===p.key?'active':''}" data-key="${p.key}">
+      <span class="dot ${p.linea==='Familia'?'dot-familia':'dot-patrimonio'}"></span>${p.nombre}
+    </div>`).join('');
+  wrap.querySelectorAll('.chip').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      ENGINE.selected = el.dataset.key;
+      renderEnginePicker();
+      renderEnginePanel();
+    });
+  });
+}
+
+function renderEnginePanel(){
+  const wrap = document.getElementById('engine-panel');
+  const key = ENGINE.selected;
+  const product = PRODUCTS.find(p=>p.key===key);
+  const rules = topRulesForProduct(key, 6);
+  wrap.innerHTML = `
+    <div class="checklist-box" style="margin-top:2px;">
+      <h4 style="display:flex; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:10px;">Motor de reglas — ${product.nombre} ${modoBadgeHTML(key)}</h4>
+      <div class="engine-rules">
+        ${rules.map(r=>{
+          const {bg,color} = weightColor(r.peso);
+          return `<div class="engine-rule-row">
+            <div class="engine-rule-weight" style="background:${bg}; color:${color};">${r.peso}</div>
+            <div class="engine-rule-body">
+              <div class="engine-rule-var"><span class="mono" style="color:var(--ink-soft);">${r.code}</span> ${r.variable}: ${r.categoria}</div>
+              ${r.racional ? `<div class="engine-rule-rat">${r.racional}</div>` : ''}
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+  `;
+}
+
+renderEnginePicker();
+renderEnginePanel();
 </script>
 </body>
 </html>

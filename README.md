@@ -30,10 +30,12 @@ python3 -m http.server 8000
   - `reorderForExplicit(results, key)` — si el cliente ya pidió un producto puntual, lo sube al puesto 1 (regla de negocio "entregar + sugerir").
   - `computeInfluence()` — calcula cuánto cambia el score de cada producto según la categoría (rango máx–mín entre categorías de una variable, sumado en los 12 productos). Es la base de "variables más influyentes", de la priorización para clientes no afiliados y del formulario corto de la pestaña 1.
   - `modoCierre(productKey)` — deriva `'auto'` o `'asesoria'` desde `CHECKLIST[key].modo`. Es el enrutador entre cierre automatizado y asesoría personalizada; no toca los pesos ni el ranking.
-- **Tres pestañas** (`.tabpanel`, mostradas/ocultadas por JS, sin router):
+  - `topRulesForProduct(productKey, n)` — lee la matriz "al revés": para un producto dado, para cada una de las 11 variables toma la categoría de mayor peso y devuelve las `n` variables que más lo mueven. Es el motor de reglas leído por producto en vez de por variable (que es como ya se lee en el Explorador); alimenta el visor interactivo de la pestaña 4.
+- **Cuatro pestañas** (`.tabpanel`, mostradas/ocultadas por JS, sin router):
   1. **Perfilar y vender** (`#tab-sell`) — formulario adaptativo afiliado/no afiliado (para afiliados marca qué datos "ya están en Colsubsidio"; para no afiliados prioriza las 5-6 preguntas de mayor influencia). Calcula el ranking en vivo y muestra el producto top con su badge de modo de cierre; genera una ficha de texto copiable/descargable (cierre automatizado o resumen para asesor, según el caso).
   2. **Explorador de variables** (`#tab-individual`) — sin formulario. Matriz de reglas en acordeón (variable → categorías × productos, mapa de calor), lista de productos clickeable para filtrar columnas (con badge de modo de cierre), lista de variables por influencia, toggle afiliado/no afiliado que cambia solo el texto de contexto y las etiquetas de prioridad (no los pesos).
   3. **Referencia y fuentes** (`#tab-ref`) — metodología resumida, tabla de fuentes, checklist de cotización por producto en `<details>`.
+  4. **Recorrido de compra** (`#tab-journey`) — el mapa end-to-end del flujo, desde "no sabe qué seguro necesita" hasta "seguro comprado": 6 etapas en un stepper vertical, con notas paralelas afiliado/no afiliado donde el camino difiere (identificación, qué se pregunta) y con las mismas dos salidas de cierre automatizado/asesoría de la pestaña 1 en las etapas finales. La etapa 3 embebe un selector de los 12 productos que muestra, para el elegido, sus variables de mayor peso (`topRulesForProduct`) — el motor de reglas de esa póliza específica, no solo el de la matriz completa.
 
 ## Decisiones de diseño a respetar si sigues iterando
 

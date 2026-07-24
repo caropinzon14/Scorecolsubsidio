@@ -1,0 +1,1256 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Perfilador de Clientes · Motor de Scoring Colsubsidio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#132339;
+    --ink-soft:#4c5a70;
+    --paper:#ECEEE6;
+    --surface:#FFFFFF;
+    --line:#D7D9CF;
+    --accent:#E1602B;      /* naranja Colsubsidio, quemado */
+    --accent-ink:#8a3915;
+    --accent-tint:#FCE7DA;
+    --teal:#1F6F63;        /* línea Patrimonio / afiliado */
+    --teal-tint:#DCEEEA;
+    --danger:#B23A48;
+    --danger-tint:#F6DEE1;
+    --radius:10px;
+    --shadow:0 1px 2px rgba(19,35,57,.06), 0 8px 24px -12px rgba(19,35,57,.18);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'IBM Plex Sans', system-ui, sans-serif;
+    -webkit-font-smoothing:antialiased;
+    line-height:1.5;
+  }
+  ::selection{background:var(--accent-tint); color:var(--accent-ink);}
+  h1,h2,h3,h4{font-family:'Fraunces', Georgia, serif; font-weight:600; margin:0; color:var(--ink); letter-spacing:-.01em;}
+  .mono{font-family:'IBM Plex Mono', monospace; font-variant-numeric:tabular-nums;}
+  a{color:var(--accent-ink);}
+  button{font-family:inherit; cursor:pointer;}
+  :focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+
+  /* ---------- Shell ---------- */
+  .topband{background:var(--ink); color:#fff; padding:28px 0 26px;}
+  .shell{max-width:1180px; margin:0 auto; padding:0 24px;}
+  .brand-row{display:flex; align-items:baseline; justify-content:space-between; gap:16px; flex-wrap:wrap;}
+  .brand-eyebrow{font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:#F4A57E; margin:0 0 6px;}
+  .topband h1{color:#fff; font-size:30px;}
+  .topband p.sub{color:#B9C2D4; max-width:640px; margin:8px 0 0; font-size:14.5px;}
+  .stamp{
+    border:1px solid rgba(255,255,255,.28); border-radius:999px; padding:6px 14px;
+    font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:#EADFCB; white-space:nowrap;
+  }
+
+  /* ---------- Tabs ---------- */
+  .tabbar{display:flex; gap:2px; margin-top:22px; border-bottom:1px solid var(--line); flex-wrap:wrap;}
+  .tabbtn{
+    background:transparent; border:none; padding:12px 18px 12px 4px; margin-right:22px;
+    font-family:'IBM Plex Mono',monospace; font-size:12.5px; letter-spacing:.04em; text-transform:uppercase;
+    color:var(--ink-soft); border-bottom:2px solid transparent; position:relative; top:1px;
+  }
+  .tabbtn .num{opacity:.55; margin-right:8px;}
+  .tabbtn.active{color:var(--ink); border-bottom-color:var(--accent); font-weight:600;}
+  .tabpanel{display:none; padding:28px 0 64px;}
+  .tabpanel.active{display:block;}
+
+  /* ---------- Layout helpers ---------- */
+  .grid-2{display:grid; grid-template-columns:360px 1fr; gap:28px; align-items:start;}
+  @media (max-width:900px){ .grid-2{grid-template-columns:1fr;} }
+  .card{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow);}
+  .card-pad{padding:22px;}
+  .card-head{padding:16px 22px; border-bottom:1px solid var(--line); display:flex; align-items:center; justify-content:space-between; gap:12px;}
+  .card-head h3{font-size:16px;}
+  .muted{color:var(--ink-soft); font-size:13.5px;}
+  .hint{color:var(--ink-soft); font-size:12.5px; margin-top:4px;}
+
+  /* ---------- Form ---------- */
+  .field{margin-bottom:15px;}
+  .field label{display:block; font-size:12.5px; font-weight:600; color:var(--ink); margin-bottom:5px;}
+  .field label .code{font-family:'IBM Plex Mono',monospace; color:var(--ink-soft); font-weight:400; margin-right:6px;}
+  select, input[type=text]{
+    width:100%; padding:9px 10px; border:1px solid var(--line); border-radius:7px; background:#fff;
+    font-family:inherit; font-size:13.5px; color:var(--ink);
+  }
+  select:focus, input:focus{border-color:var(--accent);}
+  .radio-row{display:flex; gap:8px;}
+  .radio-pill{flex:1; text-align:center; border:1px solid var(--line); border-radius:7px; padding:8px 6px; font-size:13px; cursor:pointer; user-select:none;}
+  .radio-pill input{display:none;}
+  .radio-pill.checked-si{background:var(--teal-tint); border-color:var(--teal); color:var(--teal); font-weight:600;}
+  .radio-pill.checked-no{background:#F1F2EC; border-color:var(--line); color:var(--ink-soft);}
+  .divider{height:1px; background:var(--line); margin:18px 0;}
+  .btn{
+    display:inline-flex; align-items:center; gap:8px; border-radius:8px; border:1px solid transparent;
+    padding:11px 18px; font-size:13.5px; font-weight:600;
+  }
+  .btn-primary{background:var(--accent); color:#fff;}
+  .btn-primary:hover{background:var(--accent-ink);}
+  .btn-ghost{background:transparent; border-color:var(--line); color:var(--ink);}
+  .btn-ghost:hover{border-color:var(--ink);}
+  .btn-block{width:100%; justify-content:center;}
+  .btn-teal{background:var(--teal); color:#fff;}
+  .btn-teal:hover{background:#164f46;}
+  .btn:disabled{opacity:.5; cursor:not-allowed;}
+
+  /* ---------- Results: ranking ---------- */
+  .empty-state{padding:60px 24px; text-align:center; color:var(--ink-soft);}
+  .empty-state h3{color:var(--ink); margin-bottom:6px;}
+  .top3{display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:22px;}
+  @media (max-width:720px){ .top3{grid-template-columns:1fr;} }
+  .top3-card{border:1px solid var(--line); border-radius:var(--radius); padding:16px; background:#fff; position:relative;}
+  .top3-card.rank1{border-color:var(--accent); box-shadow:0 0 0 1px var(--accent) inset;}
+  .top3-rank{font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--ink-soft); letter-spacing:.08em;}
+  .top3-card.rank1 .top3-rank{color:var(--accent-ink);}
+  .top3-name{font-family:'Fraunces',serif; font-size:18px; font-weight:600; margin:4px 0 2px;}
+  .top3-linea{display:inline-block; font-size:10.5px; padding:2px 7px; border-radius:999px; margin-bottom:10px; font-weight:600;}
+  .linea-familia{background:var(--accent-tint); color:var(--accent-ink);}
+  .linea-patrimonio{background:var(--teal-tint); color:var(--teal);}
+  .pct-big{font-family:'IBM Plex Mono',monospace; font-size:22px; font-weight:600;}
+  .top3-bar-track{height:6px; background:#EFEFE7; border-radius:99px; margin:8px 0 10px; overflow:hidden;}
+  .top3-bar-fill{height:100%; border-radius:99px;}
+  .top3-why{font-size:12px; color:var(--ink-soft); line-height:1.45;}
+  .explicit-badge{position:absolute; top:-9px; right:12px; background:var(--ink); color:#fff; font-size:9.5px; letter-spacing:.05em; text-transform:uppercase; padding:3px 8px; border-radius:999px; font-family:'IBM Plex Mono',monospace;}
+
+  table{width:100%; border-collapse:collapse; font-size:13px;}
+  th{text-align:left; font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:.05em; text-transform:uppercase; color:var(--ink-soft); font-weight:500; padding:9px 10px; border-bottom:1px solid var(--line);}
+  td{padding:9px 10px; border-bottom:1px solid #EEEEE6; vertical-align:middle;}
+  tr.rowclick{cursor:pointer;}
+  tr.rowclick:hover{background:#FAFAF4;}
+  .rank-badge{font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--ink-soft); width:18px; display:inline-block;}
+  .bar-track{position:relative; height:16px; background:#EFEFE7; border-radius:4px; width:120px; overflow:hidden;}
+  .bar-fill{position:absolute; left:0; top:0; height:100%; border-radius:4px;}
+  .bar-fill.familia{background:var(--accent);}
+  .bar-fill.patrimonio{background:var(--teal);}
+  .score-txt{font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--ink-soft); margin-left:8px;}
+  .detail-row td{background:#FAFAF6; padding:0;}
+  .detail-inner{padding:16px 18px;}
+  .detail-inner table{background:#fff; border:1px solid var(--line); border-radius:8px; overflow:hidden;}
+  .weight-cell{text-align:center; font-family:'IBM Plex Mono',monospace;}
+  .w0{color:#C7C9BE;}
+  .w-hi{color:var(--accent-ink); font-weight:600;}
+
+  /* cotizacion checklist */
+  .checklist-box{margin-top:16px; padding:16px 18px; border:1px dashed var(--line); border-radius:8px; background:#FAFAF6;}
+  .checklist-box h4{font-size:13px; margin-bottom:8px;}
+  .checklist-box ul{margin:0; padding-left:18px; font-size:13px; color:var(--ink-soft);}
+  .checklist-box li{margin-bottom:3px;}
+  .tag-mode{font-size:10.5px; font-family:'IBM Plex Mono',monospace; padding:2px 7px; border-radius:999px; margin-left:8px; background:#EFEFE7; color:var(--ink-soft);}
+
+  /* ---------- modo de cierre (auto vs asesoría) ---------- */
+  .modo-badge{display:inline-flex; align-items:center; gap:5px; font-size:10px; font-family:'IBM Plex Mono',monospace; letter-spacing:.03em; text-transform:uppercase; padding:3px 9px; border-radius:999px; font-weight:600; white-space:nowrap;}
+  .modo-auto{background:var(--accent-tint); color:var(--accent-ink);}
+  .modo-asesoria{background:var(--teal-tint); color:var(--teal);}
+  .modo-badge .dot{width:6px; height:6px; border-radius:50%; display:inline-block;}
+  .modo-auto .dot{background:var(--accent);}
+  .modo-asesoria .dot{background:var(--teal);}
+
+  /* ---------- Batch tab ---------- */
+  .upload-zone{
+    border:2px dashed var(--line); border-radius:var(--radius); padding:34px 20px; text-align:center;
+    background:#fff; margin-bottom:18px;
+  }
+  .upload-zone.drag{border-color:var(--accent); background:var(--accent-tint);}
+  .filter-row{display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px; align-items:center;}
+  .filter-row select, .filter-row input{width:auto; min-width:150px;}
+  .filter-row input[type=text]{min-width:200px;}
+  .count-pill{font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--ink-soft); background:#F1F2EC; padding:6px 12px; border-radius:999px;}
+  .th-sort{cursor:pointer; user-select:none;}
+  .th-sort:hover{color:var(--ink);}
+  .badge-afiliado-si{color:var(--teal); font-weight:600; font-size:12px;}
+  .badge-afiliado-no{color:var(--ink-soft); font-size:12px;}
+  .flag-warn{color:var(--danger); font-size:11px; font-family:'IBM Plex Mono',monospace;}
+
+  /* ---------- Reference tab ---------- */
+  .ref-grid{display:grid; grid-template-columns:1fr 1fr; gap:16px;}
+  @media (max-width:820px){ .ref-grid{grid-template-columns:1fr;} }
+  .source-row{padding:10px 0; border-bottom:1px solid #EEEEE6; font-size:13px;}
+  .source-row b{display:block; font-size:12.5px; margin-bottom:2px;}
+  .source-row .src-meta{font-size:11px; color:var(--ink-soft); font-family:'IBM Plex Mono',monospace;}
+  details{border:1px solid var(--line); border-radius:8px; margin-bottom:10px; background:#fff;}
+  summary{padding:12px 16px; font-weight:600; font-size:13.5px; cursor:pointer; list-style:none;}
+  summary::-webkit-details-marker{display:none;}
+  summary:before{content:'+ '; color:var(--accent); font-family:'IBM Plex Mono',monospace;}
+  details[open] summary:before{content:'– ';}
+  .details-body{padding:0 16px 16px; font-size:13px; color:var(--ink-soft);}
+  .limits-list li{margin-bottom:8px;}
+  footer.foot{max-width:1180px; margin:0 auto; padding:20px 24px 60px; color:var(--ink-soft); font-size:11.5px; font-family:'IBM Plex Mono',monospace;}
+
+  /* ---------- Tab 1: explorador de variables ---------- */
+  .product-pill{display:flex; align-items:center; padding:8px 9px; border-radius:7px; cursor:pointer; font-size:13px; margin-bottom:3px; border:1px solid transparent; gap:6px;}
+  .product-pill:hover{background:#F4F4EC;}
+  .product-pill.active{background:var(--accent-tint); border-color:var(--accent); font-weight:600; color:var(--accent-ink);}
+  .product-pill .dot{width:7px; height:7px; border-radius:50%; display:inline-block; margin-right:9px; flex:none;}
+  .dot-familia{background:var(--accent);}
+  .dot-patrimonio{background:var(--teal);}
+  .product-pill .pname{flex:1;}
+  .product-pill.clear{color:var(--ink-soft); border-top:1px dashed var(--line); margin-top:6px; padding-top:9px; font-size:12px;}
+
+  .influence-item{margin-bottom:12px;}
+  .influence-item .ii-top{display:flex; align-items:center; flex-wrap:wrap; gap:6px; font-size:12.5px; margin-bottom:5px;}
+  .ii-badge{font-family:'IBM Plex Mono',monospace; font-size:9.5px; padding:2px 7px; border-radius:999px; background:var(--ink); color:#fff;}
+  .ii-badge.in-system{background:var(--teal);}
+  .influence-bar-track{height:5px; background:#EFEFE7; border-radius:99px; overflow:hidden;}
+  .influence-bar-fill{height:100%; background:var(--accent); border-radius:99px;}
+
+  .accordion-group{border:1px solid var(--line); border-radius:8px; margin-bottom:8px; overflow:hidden; background:#fff;}
+  .accordion-head{display:flex; align-items:center; gap:12px; padding:11px 14px; cursor:pointer;}
+  .accordion-head:hover{background:#FAFAF6;}
+  .ah-left{display:flex; align-items:center; gap:9px; flex:1; min-width:0;}
+  .ah-left strong{font-size:13.5px; font-weight:600;}
+  .ah-code{font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:var(--ink-soft);}
+  .ah-influence{width:100px; flex:none;}
+  .accordion-caret{font-family:'IBM Plex Mono',monospace; color:var(--ink-soft); display:inline-block; transition:transform .15s; flex:none;}
+  .accordion-group.open .accordion-caret{transform:rotate(90deg);}
+  .accordion-body{display:none; padding:2px 14px 14px; overflow-x:auto;}
+  .accordion-group.open .accordion-body{display:block;}
+
+  .heat-table{border-collapse:collapse; font-size:11px; width:100%; min-width:760px;}
+  .heat-table th{font-family:'IBM Plex Mono',monospace; font-size:9.5px; padding:6px 3px; text-align:center; color:var(--ink-soft); font-weight:500; border-bottom:1px solid var(--line); white-space:nowrap;}
+  .heat-table th.cat-th{text-align:left; font-size:11px; min-width:170px;}
+  .heat-table td{padding:3px; text-align:center; border-bottom:1px solid #F1F1EA; vertical-align:middle;}
+  .heat-cell{width:100%; height:24px; border-radius:5px; margin:0 auto; display:flex; align-items:center; justify-content:center; font-family:'IBM Plex Mono',monospace; font-size:10.5px; transition:opacity .15s;}
+  .heat-cell.dim{opacity:.22;}
+  .cat-label{font-size:11.5px; padding-right:8px; white-space:nowrap; vertical-align:top; padding-top:8px;}
+  .cat-label .rat{display:block; font-size:10px; color:var(--ink-soft); font-weight:400; margin-top:2px; white-space:normal; max-width:230px; line-height:1.35;}
+
+  /* ---------- Tab 0: perfilar y vender ---------- */
+  .sell-hero{display:grid; grid-template-columns:340px 1fr; gap:28px; align-items:start;}
+  @media (max-width:940px){ .sell-hero{grid-template-columns:1fr;} }
+  .sell-section-title{font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-soft); margin:18px 0 10px;}
+  .sell-section-title:first-child{margin-top:0;}
+  .sell-optional{border:1px solid var(--line); border-radius:8px; padding:4px 14px 6px; background:#FAFAF6;}
+  .sell-optional summary{padding:8px 0; font-size:12.5px;}
+  .sell-optional summary:before{content:'+ ';}
+  .sell-optional[open] summary:before{content:'– ';}
+  .colsubsidio-note{font-size:11.5px; color:var(--teal); background:var(--teal-tint); border-radius:7px; padding:8px 10px; margin-bottom:12px;}
+
+  .reco-hero{border:1px solid var(--accent); box-shadow:0 0 0 1px var(--accent) inset; border-radius:var(--radius); background:#fff; padding:20px; margin-bottom:16px;}
+  .reco-hero-top{display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap;}
+  .reco-hero .top3-name{font-size:22px;}
+  .reco-why-list{margin:10px 0 0; padding-left:18px; font-size:12.5px; color:var(--ink-soft); line-height:1.55;}
+  .reco-secondary{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:18px;}
+  @media (max-width:640px){ .reco-secondary{grid-template-columns:1fr;} }
+  .reco-secondary .top3-card{padding:14px;}
+  .reco-secondary .top3-name{font-size:15px;}
+
+  .action-panel{border-radius:var(--radius); padding:20px; margin-top:4px;}
+  .action-panel.auto{background:var(--accent-tint); border:1px solid var(--accent);}
+  .action-panel.asesoria{background:var(--teal-tint); border:1px solid var(--teal);}
+  .action-panel h4{font-size:15px; margin-bottom:4px;}
+  .action-panel p{margin:6px 0 14px; font-size:13px; color:var(--ink-soft);}
+  .action-panel ul{margin:0 0 14px; padding-left:18px; font-size:13px; color:var(--ink-soft);}
+  .ficha-output{margin-top:14px; background:#132339; color:#DCE3EE; border-radius:8px; padding:14px 16px; font-family:'IBM Plex Mono',monospace; font-size:11.5px; white-space:pre-wrap; line-height:1.55; max-height:340px; overflow:auto;}
+  .ficha-actions{display:flex; gap:10px; margin-top:10px; flex-wrap:wrap;}
+  .copy-ok{color:var(--teal); font-size:12px; font-weight:600; margin-left:4px;}
+</style>
+</head>
+<body>
+
+<div class="topband">
+  <div class="shell">
+    <div class="brand-row">
+      <div>
+        <p class="brand-eyebrow">Sala Seggu · Motor de reglas</p>
+        <h1>Perfilador de Clientes — Colsubsidio</h1>
+        <p class="sub">Score de afinidad por 11 variables de segmentación → ranking de 12 productos de seguro (líneas Familia y Patrimonio), con hiperpersonalización afiliado/no afiliado y enrutamiento automático a cierre sin intermediario o asesoría personalizada. Motor de reglas explicable, calibrado con Fasecolda, DANE e INC — pendiente de validar con datos reales de afiliados.</p>
+      </div>
+      <div class="stamp">v2 · motor de reglas + venta guiada</div>
+    </div>
+
+    <nav class="tabbar">
+      <button class="tabbtn active" data-tab="sell"><span class="num">01</span>Perfilar y vender</button>
+      <button class="tabbtn" data-tab="individual"><span class="num">02</span>Explorador de variables</button>
+      <button class="tabbtn" data-tab="batch"><span class="num">03</span>Carga masiva</button>
+      <button class="tabbtn" data-tab="ref"><span class="num">04</span>Referencia y fuentes</button>
+    </nav>
+  </div>
+</div>
+
+<div class="shell">
+
+  <!-- ============ TAB 0: PERFILAR Y VENDER ============ -->
+  <section class="tabpanel active" id="tab-sell">
+    <div class="card card-pad" style="margin-bottom:20px;">
+      <div class="brand-row" style="align-items:flex-start;">
+        <div style="max-width:640px;">
+          <h3>Perfilá al cliente y vendé al instante</h3>
+          <p class="muted" style="margin-top:6px;">Hiperpersonalización en vivo: contesta según el perfil del cliente afiliado o no afiliado a Colsubsidio y el motor decide si el producto recomendado se puede cerrar solo — <b>autos, motos, bicicletas, patinetas, hogar, mascotas, exequias</b> — o necesita asesoría personalizada — <b>salud, vida, educación</b>.</p>
+        </div>
+        <div class="radio-row" id="sell-ctx-toggle" style="max-width:300px; min-width:260px;">
+          <label class="radio-pill checked-si" data-ctx="afiliado">Cliente afiliado</label>
+          <label class="radio-pill" data-ctx="no-afiliado">Cliente no afiliado</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="sell-hero">
+      <div class="card card-pad">
+        <h3 style="font-size:15px; margin-bottom:2px;">Perfil del cliente</h3>
+        <p class="hint" id="sell-form-hint" style="margin-bottom:14px;"></p>
+        <div id="sell-form"></div>
+        <div class="divider"></div>
+        <button class="btn btn-primary btn-block" id="btn-generar-perfil" type="button">Generar perfil y recomendación</button>
+      </div>
+      <div id="sell-results">
+        <div class="card empty-state">
+          <h3>Sin perfil generado</h3>
+          <p>Completa los datos del cliente y genera la recomendación hiperpersonalizada.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ TAB 1: EXPLORADOR DE VARIABLES ============ -->
+  <section class="tabpanel" id="tab-individual">
+    <div class="card card-pad" style="margin-bottom:20px;">
+      <div class="brand-row" style="align-items:flex-start;">
+        <div style="max-width:640px;">
+          <h3>¿Qué datos influyen en la recomendación?</h3>
+          <p class="muted" style="margin-top:6px;">Este no es un formulario para llenar: es el mapa del motor de reglas. Explora qué tan fuerte mueve cada variable el score de cada producto, y qué priorizar según si el cliente es afiliado o no.</p>
+        </div>
+        <div class="radio-row" id="ctx-toggle" style="max-width:300px; min-width:260px;">
+          <label class="radio-pill checked-si" data-ctx="afiliado">Cliente afiliado</label>
+          <label class="radio-pill" data-ctx="no-afiliado">Cliente no afiliado</label>
+        </div>
+      </div>
+      <div id="ctx-note" class="checklist-box" style="margin-top:16px;"></div>
+    </div>
+
+    <div class="grid-2" style="grid-template-columns:300px 1fr;">
+      <div>
+        <div class="card card-pad" style="margin-bottom:16px;">
+          <h3 style="font-size:14.5px; margin-bottom:2px;">Productos</h3>
+          <p class="hint" style="margin-bottom:10px;">Clic para resaltar su columna en la matriz. La etiqueta indica el modo de cierre.</p>
+          <div id="product-list"></div>
+          <div id="product-checklist"></div>
+        </div>
+        <div class="card card-pad">
+          <h3 style="font-size:14.5px; margin-bottom:2px;">Variables más influyentes</h3>
+          <p class="hint" style="margin-bottom:12px;">Ordenadas por cuánto cambia el score según la categoría del cliente en cada una — la mejor guía para priorizar qué preguntar.</p>
+          <div id="influence-list"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <h3>Matriz de reglas — variables × productos</h3>
+          <span class="muted">clic en una variable para expandir sus categorías</span>
+        </div>
+        <div style="padding:10px 16px 16px;" id="matrix-body"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ TAB 2: BATCH ============ -->
+  <section class="tabpanel" id="tab-batch">
+    <div class="card card-pad" style="margin-bottom:20px;">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:16px; flex-wrap:wrap;">
+        <div>
+          <h3>Carga masiva de clientes</h3>
+          <p class="muted" style="margin-top:4px;">Sube un CSV con una fila por cliente. Descarga la plantilla para asegurar que las categorías coincidan exactamente con las 11 variables del motor.</p>
+        </div>
+        <button class="btn btn-ghost" id="btn-plantilla">↓ Descargar plantilla CSV</button>
+      </div>
+
+      <div class="upload-zone" id="upload-zone">
+        <p style="margin:0 0 8px; font-weight:600;">Arrastra tu archivo CSV aquí, o</p>
+        <label class="btn btn-primary" style="display:inline-flex;">
+          Seleccionar archivo
+          <input type="file" id="file-input" accept=".csv" style="display:none;">
+        </label>
+        <p class="hint" style="margin-top:10px;" id="upload-status">Ningún archivo cargado todavía.</p>
+      </div>
+    </div>
+
+    <div id="batch-results"></div>
+  </section>
+
+  <!-- ============ TAB 3: REFERENCE ============ -->
+  <section class="tabpanel" id="tab-ref">
+    <div class="ref-grid">
+      <div class="card card-pad">
+        <h3 style="margin-bottom:6px;">Metodología, en breve</h3>
+        <p class="muted">Cada cliente se describe con 11 variables. Cada combinación variable–categoría tiene un peso de 0 a 5 por producto (0 = sin relevancia, 5 = máxima prioridad). El score de un producto es la suma de los 11 pesos correspondientes; se normaliza como % del puntaje máximo teórico para ese producto.</p>
+        <ul class="limits-list muted" style="padding-left:18px; margin-top:14px;">
+          <li>Motor de reglas ponderadas (explicable y auditable), no un modelo de machine learning — es la opción correcta para una primera versión en producción.</li>
+          <li>Los pesos son un punto de partida razonado con datos públicos de mercado (Fasecolda, DANE, INC), no un modelo estadístico ajustado con datos reales de afiliados de Colsubsidio.</li>
+          <li>No incluye variables de riesgo médico individual ni de comportamiento digital que Colsubsidio sí podría tener.</li>
+          <li>El sistema debe entregar primero el producto que el cliente pidió explícitamente, complementado con las 2 sugerencias adicionales de mayor score.</li>
+          <li>El <b>modo de cierre</b> (sin intermediario / con intermediario) es una capa de proceso comercial sobre el mismo motor, no cambia los pesos ni el ranking — ver pestaña "Perfilar y vender".</li>
+        </ul>
+        <div class="checklist-box" style="margin-top:18px;">
+          <h4>Preguntas abiertas para validar con Colsubsidio</h4>
+          <ul>
+            <li>¿Qué variables sociodemográficas, laborales y familiares tiene Colsubsidio de sus afiliados, y en qué formato/API se pueden consultar?</li>
+            <li>¿Existen datos históricos de qué seguro cotizó y compró cada perfil? Permitiría pasar de reglas a un modelo estadístico calibrado.</li>
+            <li>¿Qué nivel de ingreso, estrato y tipo de afiliación predomina en la base de afiliados? Podría cambiar los pesos del modelo.</li>
+            <li>Para el 10% de usuarios externos sin historial, ¿qué 5–6 preguntas se les puede pedir sin fricción en el formulario de autogestión?</li>
+            <li>¿Educación es un producto real del portafolio Colsubsidio o se maneja por otro canal (caja de compensación)? Sus pesos y checklist son provisionales — ver nota en `WEIGHTS`.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="card card-pad">
+        <h3 style="margin-bottom:10px;">Fuentes y supuestos</h3>
+        <div id="ref-sources"></div>
+      </div>
+    </div>
+
+    <div class="card card-pad" style="margin-top:16px;">
+      <h3 style="margin-bottom:4px;">Datos requeridos para cotizar, por producto</h3>
+      <p class="muted" style="margin-bottom:14px;">Checklist tomado del portafolio Colsubsidio. Los productos marcados «sin datos documentados» no aparecen en el checklist fuente — usar datos base y validar con Colsubsidio.</p>
+      <div id="ref-checklists" class="ref-grid"></div>
+    </div>
+  </section>
+
+</div>
+
+<footer class="foot">PERFILADOR-COLSUBSIDIO · MOTOR DE REGLAS V2 · SALA SEGGU — herramienta interna para uso del analista de datos. Los pesos deben recalibrarse con datos reales de afiliados antes de producción.</footer>
+
+<script>
+/* =========================================================================
+   DATA — motor de scoring (fuente: Motor_Scoring_Seguros_Colsubsidio.xlsx)
+   ========================================================================= */
+
+const PRODUCTS = [
+  {key:'vida',          nombre:'Vida',                              linea:'Familia'},
+  {key:'accidentes',    nombre:'Accidentes personales',              linea:'Familia'},
+  {key:'renta',         nombre:'Renta por hospitalización',          linea:'Familia'},
+  {key:'cancer',        nombre:'Diagnóstico positivo de cáncer',     linea:'Familia'},
+  {key:'salud',         nombre:'Póliza de salud',                    linea:'Familia'},
+  {key:'exequial',      nombre:'Exequial familiar',                  linea:'Familia'},
+  {key:'mascotas',      nombre:'Seguro de mascotas',                 linea:'Familia'},
+  {key:'autos',         nombre:'Todo riesgo autos y motos',          linea:'Patrimonio'},
+  {key:'hogar',         nombre:'Todo riesgo hogar',                  linea:'Patrimonio'},
+  {key:'bicicletas',    nombre:'Bicicletas y patinetas',             linea:'Patrimonio'},
+  {key:'arrendamiento', nombre:'Arrendamiento',                      linea:'Patrimonio'},
+  {key:'educacion',     nombre:'Educación',                          linea:'Familia'},
+];
+const MAXS = [31,24,23,21,24,24,25,25,24,21,20,25];
+
+const VARIABLES = [
+  {code:'V1',  label:'Rango de edad', categorias:['18-25 años','26-35 años','36-45 años','46-55 años','56-65 años','66+ años']},
+  {code:'V2',  label:'Género', categorias:['Masculino','Femenino']},
+  {code:'V3',  label:'Situación laboral', categorias:['Formal dependiente','Formal independiente / profesional','Informal / cuenta propia sin cotización']},
+  {code:'V4',  label:'Nivel de ingreso mensual', categorias:['Bajo (< $1.3M)','Medio ($1.3M - $4.6M)','Alto (> $4.6M)']},
+  {code:'V5',  label:'Composición familiar', categorias:['Soltero(a) sin hijos','Pareja sin hijos','Con hijos menores de edad','Monoparental con hijos','Multigeneracional / adulto mayor a cargo']},
+  {code:'V6',  label:'Tipo de vivienda', categorias:['Propia pagada','Propia financiada (hipoteca)','Arrendada']},
+  {code:'V7',  label:'¿Es propietario que arrienda un inmueble a terceros?', categorias:['Sí','No']},
+  {code:'V8',  label:'Tenencia de vehículo', categorias:['Carro','Moto','No tiene']},
+  {code:'V9',  label:'¿Tiene mascota (perro o gato)?', categorias:['Sí','No']},
+  {code:'V10', label:'¿Usa bicicleta como transporte o deporte habitual?', categorias:['Sí','No']},
+  {code:'V11', label:'¿Es jefatura de hogar femenina sin pareja?', categorias:['Sí','No']},
+];
+
+// pesos[Vx|categoria] = [vida, accidentes, renta, cancer, salud, exequial, mascotas, autos, hogar, bicicletas, arrendamiento, educacion]
+// La columna "educacion" (12ª) es una adición nueva sobre la matriz original del Excel: no viene calibrada
+// con datos de mercado (Fasecolda/DANE/INC) como las demás, es un punto de partida razonado por analogía con
+// vida/salud (dependientes, estabilidad de ingreso) — pendiente de validar con Colsubsidio, ver Referencia > preguntas abiertas.
+const WEIGHTS = {
+  'V1|18-25 años':[1,3,1,0,2,1,3,1,1,4,1,1],
+  'V1|26-35 años':[3,3,2,1,3,1,4,3,2,3,3,3],
+  'V1|36-45 años':[5,2,3,2,3,2,3,4,4,2,3,5],
+  'V1|46-55 años':[4,2,4,4,4,3,2,4,4,1,2,3],
+  'V1|56-65 años':[2,2,5,5,4,4,1,3,3,1,1,1],
+  'V1|66+ años':[1,2,5,5,3,5,1,1,2,0,0,0],
+
+  'V2|Masculino':[3,3,2,3,2,2,2,3,2,3,2,2],
+  'V2|Femenino':[4,2,3,4,3,3,4,2,2,2,2,3],
+
+  'V3|Formal dependiente':[2,1,1,2,3,2,2,3,3,2,2,3],
+  'V3|Formal independiente / profesional':[5,4,4,3,4,2,2,3,3,2,3,4],
+  'V3|Informal / cuenta propia sin cotización':[3,5,3,1,1,4,1,1,1,1,1,2],
+
+  'V4|Bajo (< $1.3M)':[1,3,1,1,0,4,1,0,0,2,0,1],
+  'V4|Medio ($1.3M - $4.6M)':[3,3,3,3,3,2,3,3,3,2,2,3],
+  'V4|Alto (> $4.6M)':[4,2,3,3,5,1,4,5,5,1,4,4],
+
+  'V5|Soltero(a) sin hijos':[1,3,1,1,2,1,4,2,1,4,1,0],
+  'V5|Pareja sin hijos':[2,2,2,2,3,2,4,3,4,2,2,0],
+  'V5|Con hijos menores de edad':[5,3,4,3,5,3,2,3,4,1,1,5],
+  'V5|Monoparental con hijos':[5,3,3,2,3,4,1,1,2,1,1,4],
+  'V5|Multigeneracional / adulto mayor a cargo':[3,2,5,4,3,5,1,1,2,0,0,2],
+
+  'V6|Propia pagada':[2,1,1,1,2,1,2,2,5,1,1,1],
+  'V6|Propia financiada (hipoteca)':[3,1,1,1,2,1,1,2,5,1,1,1],
+  'V6|Arrendada':[1,1,1,1,1,1,2,1,1,1,0,1],
+
+  'V7|Sí':[0,0,0,0,0,0,0,0,1,0,5,0],
+  'V7|No':[0,0,0,0,0,0,0,0,0,0,0,0],
+
+  'V8|Carro':[1,1,0,0,0,0,0,5,0,0,0,0],
+  'V8|Moto':[2,3,1,0,0,0,0,3,0,0,0,0],
+  'V8|No tiene':[0,0,0,0,0,0,0,0,0,0,0,0],
+
+  'V9|Sí':[0,0,0,0,0,0,5,0,0,0,0,0],
+  'V9|No':[0,0,0,0,0,0,0,0,0,0,0,0],
+
+  'V10|Sí':[0,2,0,0,0,0,0,0,0,5,0,0],
+  'V10|No':[0,0,0,0,0,0,0,0,0,0,0,0],
+
+  'V11|Sí':[3,1,1,1,1,2,0,0,0,0,0,3],
+  'V11|No':[0,0,0,0,0,0,0,0,0,0,0,0],
+};
+
+const RATIONALE = {
+  'V1|18-25 años':'Prioridad en bicicleta y mascota (perfil joven urbano); vida y cáncer casi irrelevantes a esta edad.',
+  'V1|26-35 años':'Edad pico de tenencia de mascota (30-50 años, SURA) y de arriendo (DANE); comienza a evaluar vida y autos.',
+  'V1|36-45 años':'Pico de compra de vivienda y auto propio; arranca la lógica HLV/DIME de vida por responsabilidades familiares.',
+  'V1|46-55 años':'21,7% de casos de cáncer ocurre en 55-64 años, el riesgo ya es relevante desde los 46; renta por hospitalización sube.',
+  'V1|56-65 años':'Cáncer y renta hospitalización en niveles altos; exequial empieza a ganar peso.',
+  'V1|66+ años':'53,2% de los casos de cáncer en hombres ocurre en 65+ años (INC); exequial es prioridad máxima.',
+  'V2|Masculino':'Mayor peso relativo en autos/motos y cáncer de próstata/estómago.',
+  'V2|Femenino':'76% de clientes de seguros de mascotas son mujeres (SURA); mayor probabilidad de jefatura de hogar.',
+  'V3|Formal dependiente':'Ya cuenta con EPS, ARL y pensión vía empleador; prioridad en complementarios por mayor estabilidad de ingreso.',
+  'V3|Formal independiente / profesional':'Sin seguro de vida grupal ni ARL automática; el 84% de la PEA no tiene vida individual (Fasecolda).',
+  'V3|Informal / cuenta propia sin cotización':'55,4% de la población ocupada (DANE); sin ARL ni pensión, accidentes y exequial son la protección más accesible.',
+  'V4|Bajo (< $1.3M)':'Capacidad de pago limitada a prima baja; exequial tiene fuerte arraigo cultural en estratos bajos.',
+  'V4|Medio ($1.3M - $4.6M)':'Segmento de clase media (32-34% de la población, DANE) — ICP principal de Seggu.',
+  'V4|Alto (> $4.6M)':'Mayor probabilidad de vivienda y vehículo propios; foco en salud complementaria y patrimonio.',
+  'V5|Soltero(a) sin hijos':'Sin dependientes económicos; prioridad en mascota, bicicleta y accidentes personales sobre vida.',
+  'V5|Pareja sin hijos':'Enfoque en patrimonio compartido (hogar, auto) y mascota.',
+  'V5|Con hijos menores de edad':'Máxima prioridad en vida y salud familiar (lógica HLV/DIME); sube renta por hospitalización y educación.',
+  'V5|Monoparental con hijos':'24,3% de los hogares (DANE); único proveedor, vida, exequial y educación son críticos.',
+  'V5|Multigeneracional / adulto mayor a cargo':'Mayor probabilidad de necesitar renta por hospitalización, cáncer y exequial para el adulto mayor.',
+  'V6|Propia pagada':'Activo consolidado sin deuda; el seguro de hogar es decisión 100% voluntaria.',
+  'V6|Propia financiada (hipoteca)':'+70% de pólizas de hogar atadas a crédito hipotecario (Fasecolda) — casi obligatorio en la práctica.',
+  'V6|Arrendada':'Menor necesidad de seguro de hogar; puede necesitar seguro de contenidos básico.',
+  'V7|Sí':'Oportunidad de venta cruzada específica de Arrendamiento (garantía a terceros).',
+  'V7|No':'Sin relevancia en esta variable.',
+  'V8|Carro':'Solo 12,2% del parque automotor tiene todo riesgo (Fasecolda) — alta oportunidad.',
+  'V8|Moto':'Motos son 61-63% del parque pero solo 2,8-3% tiene todo riesgo — brecha grande; sube accidentes personales.',
+  'V8|No tiene':'Sin relevancia para productos de vehículo.',
+  'V9|Sí':'Oportunidad de venta cruzada directa de Mascotas.',
+  'V9|No':'Sin relevancia en esta variable.',
+  'V10|Sí':'Oportunidad de venta cruzada directa de Bicicletas y patinetas (hurto cada 2,5h en Bogotá, 2025).',
+  'V10|No':'Sin relevancia en esta variable.',
+  'V11|Sí':'46,5% jefatura femenina, 68,8% sin pareja (DANE) — foco especial del ICP de soycaropinzón; también sube educación por ser único proveedor.',
+  'V11|No':'Sin relevancia en esta variable.',
+};
+
+// CHECKLIST[key].modo también define el MODO DE CIERRE del producto (ver modoCierre()):
+//  'Sin intermediario' → cierre automatizado / autogestionado, sin asesor.
+//  'Con intermediario'  → requiere asesoría personalizada.
+// Para accidentes, renta, cancer, arrendamiento y educacion no hay checklist fuente documentado
+// (items:null) — el modo sí se define como asunción de proceso comercial razonada, marcada explícitamente
+// como pendiente de validar con Colsubsidio en vez de inventar los items.
+const CHECKLIST = {
+  vida:{modo:'Con intermediario', items:['Cédula', 'Fecha de nacimiento', 'Género', '¿Conduce moto? Sí/No', '¿Actividades de alto riesgo? Sí/No', 'Valor a asegurar', 'Ocupación o profesión', '— Vida oneroso: valor del crédito', '— Vida ahorro: valor de la póliza + ahorro mensual deseado']},
+  salud:{modo:'Con intermediario', items:['Cédula', 'Fecha de nacimiento', 'Ciudad', 'Preexistencias (diabetes, cáncer, VIH, etc.)', 'Coberturas preferidas (maternidad, cáncer, alto costo)', 'Ocupación']},
+  exequial:{modo:'Sin intermediario', items:['Cédula del afiliado principal', 'Grupo familiar (padres, hijos, tíos, hermanos, primos)', 'Edades de cada uno']},
+  mascotas:{modo:'Sin intermediario', items:['Cédula del propietario', 'Género del propietario', 'Fecha de nacimiento', 'Tipo de mascota (perro/gato)', 'Edad de la mascota', 'Raza', 'Género de la mascota']},
+  autos:{modo:'Sin intermediario', items:['Placa', 'Si es 0 km: marca, referencia y modelo', 'Cédula del propietario', 'Género', 'Fecha de nacimiento', 'Ciudad de circulación']},
+  hogar:{modo:'Sin intermediario', items:['Cédula del propietario', '¿Vivienda propia o arrendada?', 'Estrato (dirección)', 'Valor comercial del inmueble', 'Tipo: casa, apto o finca recreo', 'Sector rural o urbano', 'Ciudad']},
+  bicicletas:{modo:'Sin intermediario', items:['Cédula', 'Fecha de nacimiento', 'Ciudad de residencia', 'Valor del equipo (patineta o bicicleta)']},
+  accidentes:{modo:'Sin intermediario', items:null},
+  renta:{modo:'Con intermediario', items:null},
+  cancer:{modo:'Con intermediario', items:null},
+  arrendamiento:{modo:'Sin intermediario', items:null},
+  educacion:{modo:'Con intermediario', items:null},
+};
+
+const SOURCES = [
+  ['Penetración del seguro','Colombia cerró 2024 en 3,29% primas/PIB vs. 6,2% OCDE.','Fasecolda / La República, feb-2025'],
+  ['Informalidad laboral','55,4% de la población ocupada es informal (57,8% hombres, 51,9% mujeres).','DANE, GEIH sep-nov 2025'],
+  ['Composición de hogares','Hogar promedio 2,86 personas; 46,5% jefatura femenina, 68,8% de ellas sin pareja.','DANE, ECV 2024'],
+  ['Vivienda','40,4% en arriendo; 36% propia pagada; 3,5% pagándola.','DANE, ECV 2024'],
+  ['Vida individual','Solo ~16% de la PEA tiene vida individual; consumo per cápita ~$370.000/año.','Fasecolda, dic-2024'],
+  ['Salud voluntaria','~4,25M colombianos con esquema de salud voluntario adicional.','Fasecolda / Acemi / Proesa, 2024'],
+  ['Cáncer por edad','53,2% casos en hombres y 38,3% en mujeres ocurren en 65+ años.','INC, 2022-2024'],
+  ['Exequial','47,5% de hogares con algún esquema; solo 2,7% con póliza fúnebre formal.','Superfinanciera / Fasecolda, 2018-2021'],
+  ['Autos y motos','Solo 12,2% del parque tiene todo riesgo (27% carros, 2,8-3% motos).','Fasecolda, 2024-2025'],
+  ['Hogar','Solo 9,3% de hogares con seguro de vivienda voluntario; +70% atadas a hipoteca.','Fasecolda / Semana, mar-2026'],
+  ['Mascotas','60-70% de hogares tiene mascota; mercado crece 40% anual.','DANE / Kantar / SURA, 2024-2026'],
+  ['Bicicletas','Hurto de una bicicleta cada 2,5h en Bogotá (2025).','Secretaría de Seguridad Bogotá, 2024-2026'],
+  ['Arrendamiento','Costo típico 40-75% de un canon; 1 de cada 4 contratos termina en conflicto.','Coriesgos / Inmobiliare Latam, 2026'],
+  ['Estratos e ingreso','Clase media $853.608-$4.596.352 (32-34% de la población).','DANE, GEIH 2024'],
+  ['Representatividad Colsubsidio','Afilia principalmente trabajadores dependientes formales — mayor formalidad que el promedio nacional.','Supuesto de trabajo — no público'],
+];
+
+/* =========================================================================
+   Utilidades
+   ========================================================================= */
+function normalize(s){
+  return (s||'').toString().trim().toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .replace(/\s+/g,' ');
+}
+function pct(n){ return Math.round(n*100)+'%'; }
+function lineaClass(l){ return l==='Familia' ? 'familia' : 'patrimonio'; }
+function lineaBadgeClass(l){ return l==='Familia' ? 'linea-familia' : 'linea-patrimonio'; }
+
+// modo de cierre comercial del producto, derivado de CHECKLIST.modo (única fuente de verdad):
+// 'auto' = sin intermediario, cierre automatizado | 'asesoria' = con intermediario, asesoría personalizada
+function modoCierre(productKey){
+  const c = CHECKLIST[productKey];
+  return (c && c.modo === 'Sin intermediario') ? 'auto' : 'asesoria';
+}
+function modoBadgeHTML(productKey){
+  const m = modoCierre(productKey);
+  return m==='auto'
+    ? '<span class="modo-badge modo-auto"><span class="dot"></span>Cierre automatizado</span>'
+    : '<span class="modo-badge modo-asesoria"><span class="dot"></span>Asesoría personalizada</span>';
+}
+
+function computeScores(profile){
+  const totals = new Array(PRODUCTS.length).fill(0);
+  const breakdown = VARIABLES.map(v=>{
+    const cat = profile[v.code];
+    const key = v.code+'|'+cat;
+    const w = WEIGHTS[key] || new Array(PRODUCTS.length).fill(0);
+    w.forEach((val,i)=> totals[i]+=val);
+    return {variable:v.label, code:v.code, categoria:cat, pesos:w, key, racional:RATIONALE[key]||''};
+  });
+  let results = PRODUCTS.map((p,i)=>({...p, score:totals[i], max:MAXS[i], pct:totals[i]/MAXS[i]}));
+  results.sort((a,b)=> b.score-a.score || b.pct-a.pct);
+  results.forEach((r,i)=>r.rank=i+1);
+  return {results, breakdown};
+}
+
+function reorderForExplicit(results, explicitKey){
+  if(!explicitKey) return results;
+  const idx = results.findIndex(r=>r.key===explicitKey);
+  if(idx<=0) return results;
+  const chosen = results[idx];
+  const rest = results.filter(r=>r.key!==explicitKey);
+  return [chosen, ...rest];
+}
+
+/* =========================================================================
+   Tabs
+   ========================================================================= */
+document.querySelectorAll('.tabbtn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.tabbtn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.tabpanel').forEach(p=>p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-'+btn.dataset.tab).classList.add('active');
+  });
+});
+
+const SHORT = {
+  vida:'Vida', accidentes:'Acc. pers.', renta:'Renta hosp.', cancer:'Cáncer',
+  salud:'Salud', exequial:'Exequial', mascotas:'Mascotas', autos:'Autos/motos',
+  hogar:'Hogar', bicicletas:'Bici/patineta', arrendamiento:'Arriendo', educacion:'Educación'
+};
+// Variables que Colsubsidio, como caja de compensación, probablemente ya tiene de sus afiliados
+// (nómina, EPS, subsidio familiar) — ver pregunta abierta #1 de la Guía y Metodología.
+const AFILIADO_EN_SISTEMA = ['V1','V2','V3','V4','V5'];
+// Variables de estilo de vida que ninguna base de RRHH/caja registra — siempre hay que preguntarlas,
+// afiliado o no.
+const SIEMPRE_PREGUNTAR = ['V6','V7','V8','V9','V10','V11'];
+
+/* =========================================================================
+   Tab 1 — explorador de variables (sin formulario)
+   ========================================================================= */
+const CTX = { mode:'afiliado', selectedProduct:null };
+
+function buildChecklistHTML(productKey){
+  const c = CHECKLIST[productKey];
+  const modoBadge = modoBadgeHTML(productKey);
+  if(!c || !c.items){
+    return `<div class="checklist-box"><h4>Datos para cotizar <span class="tag-mode">sin datos documentados</span> ${modoBadge}</h4>
+      <p class="muted" style="margin:0;">No aparece en el checklist fuente de Colsubsidio. Usar datos base (cédula, fecha de nacimiento, ocupación) y validar el detalle con el equipo comercial. El modo de cierre mostrado es una asunción de proceso, no viene del checklist fuente.</p></div>`;
+  }
+  return `<div class="checklist-box"><h4>Datos para cotizar <span class="tag-mode">${c.modo}</span> ${modoBadge}</h4>
+    <ul>${c.items.map(i=>`<li>${i}</li>`).join('')}</ul></div>`;
+}
+
+// influencia = cuánto cambia el score de cada producto según la categoría del cliente en esa variable
+// (rango máx-mín de pesos entre sus categorías, sumado en los 11 productos)
+function computeInfluence(){
+  return VARIABLES.map(v=>{
+    const weightsPerCat = v.categorias.map(c => WEIGHTS[v.code+'|'+c] || new Array(PRODUCTS.length).fill(0));
+    let total = 0;
+    const perProduct = PRODUCTS.map((p,i)=>{
+      const vals = weightsPerCat.map(w=>w[i]);
+      const range = Math.max(...vals) - Math.min(...vals);
+      total += range;
+      return range;
+    });
+    return {...v, influence: total, perProduct};
+  }).sort((a,b)=> b.influence - a.influence);
+}
+const INFLUENCE = computeInfluence();
+const MAX_INFLUENCE = INFLUENCE[0].influence;
+const TOP_INFLUENCE_CODES = INFLUENCE.slice(0,6).map(v=>v.code);
+
+function weightColor(w){
+  const bg = ['#EFEFE7','#FBDBC3','#F7C098','#F1A06C','#E1602B','#8a3915'][w];
+  const color = w>=3 ? '#fff' : '#7a6a58';
+  return {bg,color};
+}
+
+function renderCtxNote(){
+  const note = document.getElementById('ctx-note');
+  if(CTX.mode==='afiliado'){
+    note.innerHTML = `<h4 style="margin-bottom:6px;">Cliente afiliado</h4>
+      <p class="muted" style="margin:0;">Colsubsidio ya conoce a este cliente: <b>edad, género, situación laboral, nivel de ingreso y composición familiar</b> deberían poder consultarse en las bases de la caja (nómina, EPS, subsidio familiar) en vez de preguntarse — es la pregunta abierta #1 de la metodología, pendiente de validar con el equipo técnico. Lo que la caja no registra y sí conviene confirmar en la conversación son los datos de estilo de vida: vivienda, si arrienda a terceros, vehículo, mascota y bicicleta.</p>`;
+  } else {
+    note.innerHTML = `<h4 style="margin-bottom:6px;">Cliente no afiliado</h4>
+      <p class="muted" style="margin:0;">Sin historial en Colsubsidio: todo se pregunta. La metodología recomienda un formulario de autogestión de <b>máximo 5–6 preguntas</b> (pregunta abierta #4). La lista de «Variables más influyentes» a la izquierda queda marcada con las 6 de mayor impacto en el score — son las que más retorno dan en un formulario corto.</p>`;
+  }
+}
+
+function renderProductList(){
+  const wrap = document.getElementById('product-list');
+  wrap.innerHTML = PRODUCTS.map(p=>`
+    <div class="product-pill ${CTX.selectedProduct===p.key?'active':''}" data-key="${p.key}">
+      <span class="dot ${p.linea==='Familia'?'dot-familia':'dot-patrimonio'}"></span><span class="pname">${p.nombre}</span>${modoBadgeHTML(p.key)}
+    </div>`).join('') +
+    `<div class="product-pill clear" data-key="">✕ quitar filtro de columna</div>`;
+
+  wrap.querySelectorAll('.product-pill').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      CTX.selectedProduct = el.dataset.key || null;
+      renderProductList();
+      renderMatrix();
+      document.getElementById('product-checklist').innerHTML = CTX.selectedProduct ? buildChecklistHTML(CTX.selectedProduct) : '';
+    });
+  });
+}
+
+function renderInfluenceList(){
+  const wrap = document.getElementById('influence-list');
+  wrap.innerHTML = INFLUENCE.map((v,i)=>{
+    let tag = '';
+    if(CTX.mode==='afiliado'){
+      if(AFILIADO_EN_SISTEMA.includes(v.code)) tag = '<span class="ii-badge in-system">en sistema Colsubsidio</span>';
+      else tag = '<span class="ii-badge">preguntar</span>';
+    } else if(i<6){
+      tag = `<span class="ii-badge">#${i+1} preguntar</span>`;
+    }
+    return `<div class="influence-item">
+      <div class="ii-top"><span class="mono" style="color:var(--ink-soft);">${v.code}</span> ${v.label} ${tag}</div>
+      <div class="influence-bar-track"><div class="influence-bar-fill" style="width:${Math.round(v.influence/MAX_INFLUENCE*100)}%"></div></div>
+    </div>`;
+  }).join('');
+}
+
+function renderMatrix(){
+  const wrap = document.getElementById('matrix-body');
+  const openCodes = new Set(Array.from(wrap.querySelectorAll('.accordion-group.open')).map(g=>g.dataset.code));
+  const firstRender = openCodes.size===0 && wrap.children.length===0;
+
+  wrap.innerHTML = INFLUENCE.map((v,vi)=>{
+    const rows = v.categorias.map(cat=>{
+      const key = v.code+'|'+cat;
+      const w = WEIGHTS[key] || new Array(PRODUCTS.length).fill(0);
+      const cells = PRODUCTS.map((p,i)=>{
+        const val = w[i];
+        const {bg,color} = weightColor(val);
+        const dim = CTX.selectedProduct && CTX.selectedProduct!==p.key ? 'dim':'';
+        return `<td><div class="heat-cell ${dim}" style="background:${bg}; color:${color};">${val}</div></td>`;
+      }).join('');
+      return `<tr><td class="cat-label">${cat}<span class="rat">${RATIONALE[key]||''}</span></td>${cells}</tr>`;
+    }).join('');
+
+    const isOpen = openCodes.has(v.code) || (firstRender && vi===0);
+    return `<div class="accordion-group ${isOpen?'open':''}" data-code="${v.code}">
+      <div class="accordion-head">
+        <span class="accordion-caret">›</span>
+        <div class="ah-left"><span class="ah-code">${v.code}</span><strong>${v.label}</strong></div>
+        <div class="ah-influence influence-bar-track"><div class="influence-bar-fill" style="width:${Math.round(v.influence/MAX_INFLUENCE*100)}%"></div></div>
+      </div>
+      <div class="accordion-body">
+        <table class="heat-table">
+          <thead><tr><th class="cat-th">Categoría del cliente</th>${PRODUCTS.map(p=>`<th title="${p.nombre}">${SHORT[p.key]}</th>`).join('')}</tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+    </div>`;
+  }).join('');
+
+  wrap.querySelectorAll('.accordion-head').forEach(h=>{
+    h.addEventListener('click', ()=> h.parentElement.classList.toggle('open'));
+  });
+}
+
+document.querySelectorAll('#ctx-toggle .radio-pill').forEach(pill=>{
+  pill.addEventListener('click', ()=>{
+    document.querySelectorAll('#ctx-toggle .radio-pill').forEach(p=>p.classList.remove('checked-si'));
+    pill.classList.add('checked-si');
+    CTX.mode = pill.dataset.ctx;
+    renderCtxNote();
+    renderInfluenceList();
+  });
+});
+
+renderCtxNote();
+renderProductList();
+renderInfluenceList();
+renderMatrix();
+
+/* =========================================================================
+   Tab 0 — perfilar y vender (hiperpersonalización + venta guiada)
+   ========================================================================= */
+const CTXSELL = { mode:'afiliado' };
+let SELL_LAST = null; // {results, breakdown, explicit, meta}
+
+function fieldSelectHTML(v, extraNote){
+  const opts = v.categorias.map(c=>`<option value="${c}">${c}</option>`).join('');
+  return `<div class="field">
+    <label><span class="code">${v.code}</span>${v.label}</label>
+    <select data-code="${v.code}">${opts}</select>
+    ${extraNote ? `<p class="hint">${extraNote}</p>` : ''}
+  </div>`;
+}
+
+function renderSellForm(){
+  const wrap = document.getElementById('sell-form');
+  const hint = document.getElementById('sell-form-hint');
+  const explicitOpts = PRODUCTS.map(p=>`<option value="${p.key}">${p.nombre}</option>`).join('');
+  const explicitField = `<div class="field">
+    <label>¿El cliente pide un producto puntual? (opcional)</label>
+    <select id="sell-explicit"><option value="">No especifica — usar el ranking</option>${explicitOpts}</select>
+  </div><div class="divider"></div>`;
+
+  if(CTXSELL.mode==='afiliado'){
+    hint.textContent = 'Los datos que Colsubsidio ya conoce vienen pre-cargados: verifícalos con el cliente. El resto son datos de estilo de vida que ninguna base de la caja registra.';
+    const known = VARIABLES.filter(v=>AFILIADO_EN_SISTEMA.includes(v.code));
+    const rest = VARIABLES.filter(v=>SIEMPRE_PREGUNTAR.includes(v.code));
+    wrap.innerHTML = explicitField +
+      `<div class="sell-section-title">Ya en sistema Colsubsidio — verificar</div>
+      <div class="colsubsidio-note">Simulado: en producción estos campos se autocompletarían desde nómina/EPS/subsidio familiar (pregunta abierta #1 de la metodología).</div>` +
+      known.map(v=>fieldSelectHTML(v)).join('') +
+      `<div class="sell-section-title">Estilo de vida — preguntar siempre</div>` +
+      rest.map(v=>fieldSelectHTML(v)).join('');
+  } else {
+    hint.textContent = 'Sin historial en Colsubsidio: formulario corto de autogestión. Las 6 variables de mayor impacto van primero; el resto es opcional y mejora la precisión.';
+    const top = VARIABLES.filter(v=>TOP_INFLUENCE_CODES.includes(v.code));
+    const rest = VARIABLES.filter(v=>!TOP_INFLUENCE_CODES.includes(v.code));
+    wrap.innerHTML = explicitField +
+      `<div class="sell-section-title">Preguntas clave (5-6, mayor impacto en el score)</div>` +
+      top.map(v=>fieldSelectHTML(v)).join('') +
+      `<details class="sell-optional"><summary>Preguntas adicionales (opcionales, afinan el resultado)</summary>` +
+      rest.map(v=>fieldSelectHTML(v)).join('') + `</details>`;
+  }
+}
+
+document.querySelectorAll('#sell-ctx-toggle .radio-pill').forEach(pill=>{
+  pill.addEventListener('click', ()=>{
+    document.querySelectorAll('#sell-ctx-toggle .radio-pill').forEach(p=>p.classList.remove('checked-si'));
+    pill.classList.add('checked-si');
+    CTXSELL.mode = pill.dataset.ctx;
+    renderSellForm();
+  });
+});
+
+function buildFichaText(top, meta, breakdown, mode){
+  const fecha = new Date().toLocaleDateString('es-CO');
+  const perfilLines = breakdown.map(b=>`  ${b.code} ${b.variable}: ${b.categoria}`).join('\n');
+  const checklist = CHECKLIST[top.key];
+  const checklistLines = checklist && checklist.items ? checklist.items.map(i=>`  - ${i}`).join('\n') : '  (sin checklist documentado — usar datos base y validar con Colsubsidio)';
+  const header = mode==='auto'
+    ? `FICHA DE CIERRE AUTOMATIZADO — ${top.nombre}`
+    : `RESUMEN PARA ASESOR — ${top.nombre}`;
+  const topRationale = breakdown
+    .filter(b=>b.pesos[PRODUCTS.findIndex(p=>p.key===top.key)] >= 3)
+    .map(b=>`  · ${b.racional}`).join('\n') || '  (sin racional destacado)';
+  return `${header}
+Generado: ${fecha} · Sala Seggu · Perfilador Colsubsidio
+
+Cliente afiliado a Colsubsidio: ${meta.afiliado}
+Producto recomendado: ${top.nombre} (${top.linea}) — ${pct(top.pct)} de afinidad, score ${top.score}/${top.max}
+Modo de cierre: ${mode==='auto' ? 'Sin intermediario — cierre automatizado' : 'Con intermediario — asesoría personalizada'}
+
+Perfil capturado:
+${perfilLines}
+
+Por qué este producto:
+${topRationale}
+
+Datos para cotizar:
+${checklistLines}
+
+${mode==='auto'
+  ? 'Siguiente paso: pasar esta ficha a cotización y pago en línea (integración pendiente con checkout Colsubsidio / Hola Seggu).'
+  : 'Siguiente paso: enviar este resumen al asesor para agendar la llamada (integración pendiente con Hola Seggu / n8n para automatizar el enrutamiento).'}`;
+}
+
+function renderSellResults(){
+  const {results, breakdown, explicit, meta} = SELL_LAST;
+  const wrap = document.getElementById('sell-results');
+  const top = results[0];
+  const mode = modoCierre(top.key);
+  const secondary = results.slice(1,3);
+
+  const whyItems = breakdown
+    .filter(b=>b.pesos[PRODUCTS.findIndex(p=>p.key===top.key)] >= 3)
+    .sort((a,b)=> b.pesos[PRODUCTS.findIndex(p=>p.key===top.key)] - a.pesos[PRODUCTS.findIndex(p=>p.key===top.key)])
+    .slice(0,4)
+    .map(b=>`<li><b>${b.variable}:</b> ${b.racional}</li>`).join('') || '<li>Sin variables de alto impacto individual — score distribuido parejo.</li>';
+
+  wrap.innerHTML = `
+    <div class="reco-hero">
+      ${explicit===top.key ? '<span class="explicit-badge">Solicitado por el cliente</span>' : ''}
+      <div class="reco-hero-top">
+        <div>
+          <span class="top3-linea ${lineaBadgeClass(top.linea)}">${top.linea}</span>
+          <div class="top3-name">${top.nombre}</div>
+        </div>
+        <div style="text-align:right;">
+          <div class="pct-big">${pct(top.pct)}</div>
+          ${modoBadgeHTML(top.key)}
+        </div>
+      </div>
+      <div class="top3-bar-track"><div class="top3-bar-fill" style="width:${Math.round(top.pct*100)}%; background:${top.linea==='Familia'?'var(--accent)':'var(--teal)'};"></div></div>
+      <ul class="reco-why-list">${whyItems}</ul>
+    </div>
+
+    <div class="reco-secondary">
+      ${secondary.map(r=>`
+        <div class="top3-card">
+          <span class="top3-rank">#${r.rank}</span>
+          <div class="top3-name">${r.nombre}</div>
+          <span class="top3-linea ${lineaBadgeClass(r.linea)}">${r.linea}</span>
+          ${modoBadgeHTML(r.key)}
+          <div class="top3-bar-track"><div class="top3-bar-fill" style="width:${Math.round(r.pct*100)}%; background:${r.linea==='Familia'?'var(--accent)':'var(--teal)'};"></div></div>
+          <div class="score-txt" style="margin-left:0;">${pct(r.pct)} de afinidad</div>
+        </div>`).join('')}
+    </div>
+
+    <div class="action-panel ${mode}">
+      ${mode==='auto' ? `
+        <h4>Cierre automatizado — sin intermediario</h4>
+        <p>${top.nombre} es un producto estandarizado: se puede cotizar y comprar en línea sin pasar por un asesor. Genera la ficha con los datos capturados y pásala a cotización.</p>
+      ` : `
+        <h4>Asesoría personalizada — con intermediario</h4>
+        <p>${top.nombre} requiere acompañamiento de un asesor certificado por su complejidad (salud, vida o educación). Genera el resumen y envíalo para agendar la llamada.</p>
+      `}
+      <button class="btn ${mode==='auto'?'btn-primary':'btn-teal'}" id="btn-ficha" type="button">${mode==='auto' ? 'Generar ficha de cierre' : 'Generar resumen para asesor'}</button>
+      <div id="ficha-wrap"></div>
+    </div>
+  `;
+
+  document.getElementById('btn-ficha').addEventListener('click', ()=>{
+    const text = buildFichaText(top, meta, breakdown, mode);
+    const ficha = document.getElementById('ficha-wrap');
+    ficha.innerHTML = `<div class="ficha-output">${text.replace(/&/g,'&amp;').replace(/</g,'&lt;')}</div>
+      <div class="ficha-actions">
+        <button class="btn btn-ghost" id="btn-copiar-ficha" type="button">Copiar</button>
+        <button class="btn btn-ghost" id="btn-descargar-ficha" type="button">↓ Descargar .txt</button>
+        <span class="copy-ok" id="copy-ok" style="display:none;">Copiado ✓</span>
+      </div>`;
+    document.getElementById('btn-copiar-ficha').addEventListener('click', ()=>{
+      navigator.clipboard.writeText(text).then(()=>{
+        const ok = document.getElementById('copy-ok');
+        ok.style.display = 'inline';
+        setTimeout(()=> ok.style.display='none', 2000);
+      });
+    });
+    document.getElementById('btn-descargar-ficha').addEventListener('click', ()=>{
+      downloadBlob(text, `ficha_${top.key}_${meta.afiliado==='Sí'?'afiliado':'no-afiliado'}.txt`, 'text/plain;charset=utf-8;');
+    });
+  });
+}
+
+document.getElementById('btn-generar-perfil').addEventListener('click', ()=>{
+  const profile = {};
+  document.querySelectorAll('#sell-form select[data-code]').forEach(sel=>{
+    profile[sel.dataset.code] = sel.value;
+  });
+  VARIABLES.forEach(v=>{ if(!profile[v.code]) profile[v.code] = v.categorias[0]; });
+  const explicit = document.getElementById('sell-explicit').value || null;
+  const meta = { afiliado: CTXSELL.mode==='afiliado' ? 'Sí' : 'No' };
+  const {results, breakdown} = computeScores(profile);
+  const ordered = reorderForExplicit(results, explicit);
+  SELL_LAST = {results:ordered, breakdown, explicit, meta};
+  renderSellResults();
+});
+
+renderSellForm();
+
+/* =========================================================================
+   Tab 2 — carga masiva
+   ========================================================================= */
+const CSV_HEADERS = ['nombre','cedula','afiliado','V1','V2','V3','V4','V5','V6','V7','V8','V9','V10','V11','producto_solicitado'];
+
+function downloadBlob(content, filename, type){
+  const blob = new Blob([content], {type});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+document.getElementById('btn-plantilla').addEventListener('click', ()=>{
+  const example = ['María Pérez','1010101010','Sí','36-45 años','Femenino','Formal independiente / profesional','Medio ($1.3M - $4.6M)','Con hijos menores de edad','Arrendada','No','Carro','Sí','No','No',''];
+  const csv = [CSV_HEADERS.join(','), example.map(v=>`"${v}"`).join(',')].join('\n');
+  downloadBlob(csv, 'plantilla_perfilador_colsubsidio.csv', 'text/csv;charset=utf-8;');
+});
+
+function parseCSV(text){
+  const rows = [];
+  let row = [], field = '', inQuotes = false;
+  for(let i=0;i<text.length;i++){
+    const c = text[i], next = text[i+1];
+    if(inQuotes){
+      if(c==='"' && next==='"'){ field+='"'; i++; }
+      else if(c==='"'){ inQuotes=false; }
+      else field += c;
+    } else {
+      if(c==='"') inQuotes = true;
+      else if(c===','){ row.push(field); field=''; }
+      else if(c==='\n' || c==='\r'){
+        if(c==='\r' && next==='\n') i++;
+        row.push(field); field='';
+        if(row.length>1 || row[0]!=='') rows.push(row);
+        row=[];
+      } else field += c;
+    }
+  }
+  if(field!=='' || row.length){ row.push(field); rows.push(row); }
+  return rows;
+}
+
+// mapas de normalización por variable, para tolerar variaciones de escritura
+const CATEGORY_LOOKUP = {};
+VARIABLES.forEach(v=>{
+  CATEGORY_LOOKUP[v.code] = {};
+  v.categorias.forEach(c=> CATEGORY_LOOKUP[v.code][normalize(c)] = c);
+});
+const PRODUCT_LOOKUP = {};
+PRODUCTS.forEach(p=> PRODUCT_LOOKUP[normalize(p.nombre)] = p.key);
+
+function matchCategory(code, raw){
+  if(!raw) return {value:null, ok:false};
+  const n = normalize(raw);
+  if(CATEGORY_LOOKUP[code][n]) return {value:CATEGORY_LOOKUP[code][n], ok:true};
+  return {value:raw, ok:false};
+}
+function matchProduct(raw){
+  if(!raw) return null;
+  const n = normalize(raw);
+  return PRODUCT_LOOKUP[n] || null;
+}
+
+let BATCH_DATA = []; // {meta, profile, explicit, results, breakdown, warnings}
+
+function processCSV(text){
+  const rows = parseCSV(text).filter(r=>r.some(c=>c && c.trim()!==''));
+  if(!rows.length) return {clients:[], errors:['El archivo está vacío.']};
+  const header = rows[0].map(h=>h.trim());
+  const idxOf = {};
+  header.forEach((h,i)=> idxOf[h]=i);
+  const missing = CSV_HEADERS.filter(h=>!(h in idxOf));
+  const errors = [];
+  if(missing.length) errors.push('Columnas faltantes en el CSV: '+missing.join(', ')+'. Usa la plantilla para evitar errores.');
+
+  const clients = [];
+  for(let r=1;r<rows.length;r++){
+    const row = rows[r];
+    const get = (h)=> idxOf[h]!==undefined ? (row[idxOf[h]]||'').trim() : '';
+    const profile = {};
+    const warnings = [];
+    VARIABLES.forEach(v=>{
+      const raw = get(v.code);
+      const m = matchCategory(v.code, raw);
+      if(!m.ok) warnings.push(`${v.code} sin coincidencia exacta ("${raw||'vacío'}") — score de esa variable = 0`);
+      profile[v.code] = m.ok ? m.value : (v.categorias[0]); // fallback neutro documentado en warning
+      if(!m.ok) profile[v.code+'__raw'] = raw;
+    });
+    const explicitRaw = get('producto_solicitado');
+    const explicit = matchProduct(explicitRaw);
+    if(explicitRaw && !explicit) warnings.push(`producto_solicitado "${explicitRaw}" no reconocido`);
+
+    const meta = {
+      nombre: get('nombre') || '(sin nombre)',
+      cedula: get('cedula'),
+      afiliado: get('afiliado') || 'No especificado'
+    };
+    const {results, breakdown} = computeScores(profile);
+    const ordered = reorderForExplicit(results, explicit);
+    clients.push({meta, profile, explicit, results:ordered, breakdown, warnings});
+  }
+  return {clients, errors};
+}
+
+const zone = document.getElementById('upload-zone');
+const fileInput = document.getElementById('file-input');
+['dragover','dragleave','drop'].forEach(evt=>{
+  zone.addEventListener(evt, (e)=>{
+    e.preventDefault();
+    if(evt==='dragover') zone.classList.add('drag');
+    else zone.classList.remove('drag');
+  });
+});
+zone.addEventListener('drop', (e)=>{
+  const f = e.dataTransfer.files[0];
+  if(f) handleFile(f);
+});
+fileInput.addEventListener('change', (e)=>{
+  if(e.target.files[0]) handleFile(e.target.files[0]);
+});
+
+function handleFile(file){
+  const status = document.getElementById('upload-status');
+  status.textContent = 'Procesando '+file.name+'…';
+  const reader = new FileReader();
+  reader.onload = (e)=>{
+    const {clients, errors} = processCSV(e.target.result);
+    BATCH_DATA = clients;
+    if(errors.length){
+      status.innerHTML = `<span style="color:var(--danger);">${errors.join(' ')}</span>`;
+    } else {
+      const warnCount = clients.filter(c=>c.warnings.length).length;
+      status.textContent = `${clients.length} clientes procesados` + (warnCount? ` · ${warnCount} con advertencias de formato (revisar en la tabla)` : '');
+    }
+    renderBatchResults();
+  };
+  reader.readAsText(file, 'UTF-8');
+}
+
+let batchSort = {field:'top1pct', dir:'desc'};
+let batchFilters = {afiliado:'', linea:'', producto:'', q:''};
+
+function renderBatchResults(){
+  const wrap = document.getElementById('batch-results');
+  if(!BATCH_DATA.length){
+    wrap.innerHTML = `<div class="card empty-state"><h3>Sin datos cargados</h3><p>Sube un CSV para ver el ranking de todos tus clientes.</p></div>`;
+    return;
+  }
+
+  let rows = BATCH_DATA.map((c,i)=>({...c, idx:i, top1:c.results[0], top2:c.results[1], top3:c.results[2]}));
+
+  if(batchFilters.afiliado) rows = rows.filter(r=>normalize(r.meta.afiliado)===normalize(batchFilters.afiliado));
+  if(batchFilters.linea) rows = rows.filter(r=>r.top1.linea===batchFilters.linea);
+  if(batchFilters.producto) rows = rows.filter(r=>r.top1.key===batchFilters.producto);
+  if(batchFilters.q){
+    const q = normalize(batchFilters.q);
+    rows = rows.filter(r=> normalize(r.meta.nombre).includes(q) || normalize(r.meta.cedula).includes(q));
+  }
+
+  rows.sort((a,b)=>{
+    let av, bv;
+    if(batchSort.field==='top1pct'){ av=a.top1.pct; bv=b.top1.pct; }
+    else if(batchSort.field==='nombre'){ av=normalize(a.meta.nombre); bv=normalize(b.meta.nombre); }
+    else if(batchSort.field==='afiliado'){ av=normalize(a.meta.afiliado); bv=normalize(b.meta.afiliado); }
+    if(av<bv) return batchSort.dir==='asc'?-1:1;
+    if(av>bv) return batchSort.dir==='asc'?1:-1;
+    return 0;
+  });
+
+  const productOpts = PRODUCTS.map(p=>`<option value="${p.key}" ${batchFilters.producto===p.key?'selected':''}>${p.nombre}</option>`).join('');
+
+  const tableRows = rows.map(r=>{
+    const warn = r.warnings.length ? `<div class="flag-warn" title="${r.warnings.join(' · ')}">⚠ ${r.warnings.length} advertencia(s)</div>` : '';
+    return `<tr class="rowclick" data-idx="${r.idx}">
+      <td>${r.meta.nombre}${r.meta.cedula?` <span class="muted mono" style="font-size:11px;">· ${r.meta.cedula}</span>`:''}${warn}</td>
+      <td><span class="${normalize(r.meta.afiliado)==='si'?'badge-afiliado-si':'badge-afiliado-no'}">${r.meta.afiliado}</span></td>
+      <td>${r.top1.nombre} ${r.explicit ? '<span class="tag-mode" style="background:var(--ink); color:#fff;">solicitado</span>' : ''}</td>
+      <td><span class="top3-linea ${lineaBadgeClass(r.top1.linea)}" style="margin:0;">${r.top1.linea}</span></td>
+      <td>${modoBadgeHTML(r.top1.key)}</td>
+      <td><div style="display:flex; align-items:center;"><div class="bar-track" style="width:80px;"><div class="bar-fill ${lineaClass(r.top1.linea)}" style="width:${Math.round(r.top1.pct*100)}%"></div></div><span class="score-txt">${pct(r.top1.pct)}</span></div></td>
+      <td class="muted" style="font-size:12.5px;">${r.top2.nombre}</td>
+      <td class="muted" style="font-size:12.5px;">${r.top3.nombre}</td>
+    </tr>
+    <tr class="detail-row" id="bdetail-${r.idx}" style="display:none;"><td colspan="8"><div class="detail-inner"></div></td></tr>`;
+  }).join('');
+
+  wrap.innerHTML = `
+    <div class="card card-pad" style="margin-bottom:16px;">
+      <div class="filter-row">
+        <select id="bf-afiliado"><option value="">Afiliado: todos</option><option value="Sí" ${batchFilters.afiliado==='Sí'?'selected':''}>Sí</option><option value="No" ${batchFilters.afiliado==='No'?'selected':''}>No</option></select>
+        <select id="bf-linea"><option value="">Línea: todas</option><option value="Familia" ${batchFilters.linea==='Familia'?'selected':''}>Familia</option><option value="Patrimonio" ${batchFilters.linea==='Patrimonio'?'selected':''}>Patrimonio</option></select>
+        <select id="bf-producto"><option value="">Producto top 1: todos</option>${productOpts}</select>
+        <input type="text" id="bf-q" placeholder="Buscar por nombre o cédula…" value="${batchFilters.q}">
+        <span class="count-pill">${rows.length} de ${BATCH_DATA.length} clientes</span>
+        <button class="btn btn-ghost" id="btn-export" style="margin-left:auto;">↓ Exportar CSV</button>
+      </div>
+    </div>
+    <div class="card">
+      <div style="padding:6px 10px 14px; overflow-x:auto;">
+        <table>
+          <thead><tr>
+            <th class="th-sort" data-field="nombre">Cliente</th>
+            <th class="th-sort" data-field="afiliado">Afiliado</th>
+            <th class="th-sort" data-field="top1pct">Top 1 sugerido</th>
+            <th>Línea</th>
+            <th>Cierre</th>
+            <th>% del máximo</th>
+            <th>Top 2</th>
+            <th>Top 3</th>
+          </tr></thead>
+          <tbody>${tableRows}</tbody>
+        </table>
+      </div>
+    </div>
+  `;
+
+  document.getElementById('bf-afiliado').addEventListener('change', e=>{ batchFilters.afiliado=e.target.value; renderBatchResults(); });
+  document.getElementById('bf-linea').addEventListener('change', e=>{ batchFilters.linea=e.target.value; renderBatchResults(); });
+  document.getElementById('bf-producto').addEventListener('change', e=>{ batchFilters.producto=e.target.value; renderBatchResults(); });
+  document.getElementById('bf-q').addEventListener('input', e=>{ batchFilters.q=e.target.value; renderBatchResults(); });
+  wrap.querySelectorAll('.th-sort').forEach(th=>{
+    th.addEventListener('click', ()=>{
+      const f = th.dataset.field;
+      batchSort.dir = (batchSort.field===f && batchSort.dir==='desc') ? 'asc' : 'desc';
+      batchSort.field = f;
+      renderBatchResults();
+    });
+  });
+  wrap.querySelectorAll('tr.rowclick').forEach(row=>{
+    row.addEventListener('click', ()=>{
+      const idx = row.dataset.idx;
+      const detail = document.getElementById('bdetail-'+idx);
+      const isOpen = detail.style.display !== 'none';
+      wrap.querySelectorAll('.detail-row').forEach(d=>d.style.display='none');
+      if(!isOpen){
+        const c = BATCH_DATA[idx];
+        const rankTable = `<table style="margin-bottom:10px;"><thead><tr><th></th><th>Producto</th><th>Línea</th><th>Cierre</th><th>% máx.</th><th style="text-align:right;">Score</th></tr></thead><tbody>
+          ${c.results.map(r=>`<tr><td class="rank-badge">#${r.rank}</td><td>${r.nombre}</td><td><span class="top3-linea ${lineaBadgeClass(r.linea)}" style="margin:0;">${r.linea}</span></td><td>${modoBadgeHTML(r.key)}</td><td>${pct(r.pct)}</td><td class="mono" style="text-align:right;">${r.score}/${r.max}</td></tr>`).join('')}
+        </tbody></table>`;
+        const warnHtml = c.warnings.length ? `<p class="flag-warn" style="margin-bottom:10px;">⚠ ${c.warnings.join(' · ')}</p>` : '';
+        detail.querySelector('.detail-inner').innerHTML = warnHtml + rankTable;
+        detail.style.display='table-row';
+      }
+    });
+  });
+  document.getElementById('btn-export').addEventListener('click', exportBatchCSV);
+}
+
+function exportBatchCSV(){
+  const header = ['nombre','cedula','afiliado','top1_producto','top1_pct','top1_score','top1_max','top1_cierre','top2_producto','top2_pct','top3_producto','top3_pct','solicitado_explicito','advertencias'];
+  const lines = [header.join(',')];
+  BATCH_DATA.forEach(c=>{
+    const t1=c.results[0], t2=c.results[1], t3=c.results[2];
+    const row = [
+      c.meta.nombre, c.meta.cedula, c.meta.afiliado,
+      t1.nombre, (t1.pct*100).toFixed(0)+'%', t1.score, t1.max,
+      modoCierre(t1.key)==='auto' ? 'Sin intermediario' : 'Con intermediario',
+      t2.nombre, (t2.pct*100).toFixed(0)+'%',
+      t3.nombre, (t3.pct*100).toFixed(0)+'%',
+      c.explicit ? PRODUCTS.find(p=>p.key===c.explicit).nombre : '',
+      c.warnings.join(' | ')
+    ].map(v=>`"${(v||'').toString().replace(/"/g,'""')}"`);
+    lines.push(row.join(','));
+  });
+  downloadBlob(lines.join('\n'), 'resultados_perfilador_colsubsidio.csv', 'text/csv;charset=utf-8;');
+}
+
+/* =========================================================================
+   Tab 3 — referencia
+   ========================================================================= */
+document.getElementById('ref-sources').innerHTML = SOURCES.map(s=>`
+  <div class="source-row"><b>${s[0]}</b>${s[1]}<div class="src-meta">${s[2]}</div></div>
+`).join('');
+
+const checklistOrder = ['vida','salud','educacion','exequial','mascotas','autos','hogar','bicicletas','accidentes','renta','cancer','arrendamiento'];
+document.getElementById('ref-checklists').innerHTML = checklistOrder.map(key=>{
+  const p = PRODUCTS.find(pp=>pp.key===key);
+  return `<details><summary>${p.nombre}</summary><div class="details-body">${buildChecklistHTML(key)}</div></details>`;
+}).join('');
+</script>
+</body>
+</html>
